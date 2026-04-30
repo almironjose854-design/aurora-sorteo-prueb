@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aurora Inmobiliaria | Panel Admin</title>
+    <meta
+      name="description"
+      content="Panel interno con estadisticas, graficos, sorteos e historial alimentado por archivos JSON."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./assets/aurora-shared.css" />
+    <script src="./assets/aurora-data.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js" defer></script>
+    <script src="./assets/aurora-admin.js" defer></script>
+  </head>
+  <body class="page-admin">
+    <div class="container">
+      <header class="topbar">
+        <div class="brand-block">
+          <div class="brand-wordmark">
+            <img data-brand-logo src="" alt="Aurora Inmobiliaria" />
+          </div>
+          <div class="brand-copy">
+            <span class="eyebrow-text">Acceso interno</span>
+            <strong>Panel administrativo de registros y sorteos</strong>
+            <span>Estadisticas, control de base y sorteos desde el backend JSON.</span>
+          </div>
+        </div>
+
+        <div class="meta-row">
+          <div class="meta-chip meta-chip-live">JSON activo</div>
+          <div class="meta-chip"><strong id="headerCount">0</strong> registros</div>
+        </div>
+      </header>
+
+      <main class="admin-main">
+        <section id="loginView" class="surface auth-card">
+          <div class="panel-top">
+            <div>
+              <div class="eyebrow">Login administrativo</div>
+              <h1 class="section-title">Ingresa al panel interno</h1>
+              <p class="auth-copy">Usa las credenciales configuradas en el servidor Node.js.</p>
+            </div>
+
+            <div class="logo-badge">
+              <img data-brand-logo src="" alt="Aurora Inmobiliaria" />
+            </div>
+          </div>
+
+          <form id="adminLoginForm" class="auth-form" novalidate>
+            <div class="columns-2">
+              <div class="field">
+                <label for="adminUser">Usuario</label>
+                <input id="adminUser" name="adminUser" type="text" autocomplete="username" required />
+              </div>
+
+              <div class="field">
+                <label for="adminPassword">Contrasena</label>
+                <input
+                  id="adminPassword"
+                  name="adminPassword"
+                  type="password"
+                  autocomplete="current-password"
+                  required
+                />
+              </div>
+            </div>
+
+            <div id="loginNotice" class="notice" role="status" aria-live="polite"></div>
+            <button class="btn btn-secondary" type="submit">Ingresar al panel</button>
+          </form>
+        </section>
+
+        <section id="dashboardView" class="dashboard-stack hidden">
+          <section id="overview" class="surface dashboard-hero">
+            <div class="section-heading">
+              <div>
+                <div class="eyebrow">Vista ejecutiva</div>
+                <h2 class="section-title">Centro de control de la campana</h2>
+                <p class="section-copy">
+                  Analiza el comportamiento del formulario, administra la base y ejecuta sorteos con datos reales.
+                </p>
+              </div>
+
+              <div class="button-row">
+                <a class="btn btn-ghost" href="./" data-app-route="">Ver formulario publico</a>
+                <button id="refreshBtn" class="btn btn-ghost" type="button">Actualizar</button>
+                <button id="exportCsvBtn" class="btn btn-primary" type="button">CSV de la vista</button>
+                <button id="exportExcelBtn" class="btn btn-ghost" type="button">Excel</button>
+                <button id="exportPdfBtn" class="btn btn-ghost" type="button">PDF</button>
+                <button id="exportTxtBtn" class="btn btn-ghost" type="button">TXT</button>
+                <button id="exportHtmlBtn" class="btn btn-ghost" type="button">HTML</button>
+                <button id="exportJsonBtn" class="btn btn-secondary" type="button">Backup JSON</button>
+                <button id="logoutBtn" class="btn btn-danger" type="button">Cerrar sesion</button>
+              </div>
+            </div>
+
+            <div class="system-strip" id="systemStatus"></div>
+          </section>
+
+          <nav class="dashboard-nav">
+            <a href="#overview">Resumen</a>
+            <a href="#insights">Insights</a>
+            <a href="#charts">Graficos</a>
+            <a href="#records">Registros</a>
+            <a href="#raffle">Sorteo</a>
+            <a href="#history">Historial</a>
+          </nav>
+
+          <section class="surface section-card">
+            <div class="section-heading">
+              <div>
+                <h3>Periodo de analisis</h3>
+                <p class="section-copy">Puedes leer las metricas sobre toda la base o sobre una ventana reciente.</p>
+              </div>
+
+              <div class="field field-inline">
+                <label for="analyticsPeriod">Periodo</label>
+                <select id="analyticsPeriod">
+                  <option value="all">Toda la base</option>
+                  <option value="today">Solo hoy</option>
+                  <option value="7d">Ultimos 7 dias</option>
+                  <option value="30d">Ultimos 30 dias</option>
+                </select>
+              </div>
+            </div>
+          </section>
+
+          <section id="statsGrid" class="stats-grid"></section>
+
+          <div class="dashboard-grid">
+            <section id="insights" class="surface section-card span-4">
+              <div class="section-heading">
+                <div>
+                  <h3>Dominios de correo mas frecuentes</h3>
+                  <p class="section-copy">Muestra que tipos de correo predominan dentro de la base.</p>
+                </div>
+              </div>
+              <div id="domainList" class="insight-list"></div>
+            </section>
+
+            <section class="surface section-card span-4">
+              <div class="section-heading">
+                <div>
+                  <h3>Prefijos de celular mas frecuentes</h3>
+                  <p class="section-copy">Ayuda a detectar rapidamente la concentracion principal de contactos.</p>
+                </div>
+              </div>
+              <div id="prefixList" class="insight-list"></div>
+            </section>
+
+            <section class="surface section-card span-4">
+              <div class="section-heading">
+                <div>
+                  <h3>Calidad de datos</h3>
+                  <p class="section-copy">Detecta telefonos, correos o nombres repetidos para revision.</p>
+                </div>
+              </div>
+              <div id="qualityList" class="insight-list"></div>
+            </section>
+
+            <section class="surface section-card span-6">
+              <div class="section-heading">
+                <div>
+                  <h3>Actividad reciente</h3>
+                  <p class="section-copy">Altas, eliminaciones y sorteos persistidos por el backend.</p>
+                </div>
+              </div>
+              <div id="activityList" class="insight-list"></div>
+            </section>
+
+            <section class="surface section-card span-6">
+              <div class="section-heading">
+                <div>
+                  <h3>Ultimo sorteo</h3>
+                  <p class="section-copy">Resumen inmediato del resultado mas reciente.</p>
+                </div>
+              </div>
+              <div id="latestDrawResult" class="empty-state">Aun no se realizaron sorteos.</div>
+            </section>
+          </div>
+
+          <div id="charts" class="dashboard-grid">
+            <section class="surface chart-card span-6">
+              <div class="section-heading">
+                <div>
+                  <h3>Ingresos por dia</h3>
+                  <p class="section-copy">Visualiza el ritmo de carga durante el periodo seleccionado.</p>
+                </div>
+              </div>
+              <div class="chart-box">
+                <canvas id="chartDaily"></canvas>
+              </div>
+            </section>
+
+            <section class="surface chart-card span-6">
+              <div class="section-heading">
+                <div>
+                  <h3>Distribucion con y sin lote</h3>
+                  <p class="section-copy">Comparacion simple de tipos de participantes.</p>
+                </div>
+              </div>
+              <div class="chart-box">
+                <canvas id="chartOwnership"></canvas>
+              </div>
+            </section>
+          </div>
+
+          <section id="records" class="surface table-card">
+            <div class="section-heading">
+              <div>
+                <h3>Registros guardados</h3>
+                <p class="section-copy">Filtra, revisa y depura la base leida desde el backend en Node.js.</p>
+              </div>
+            </div>
+
+            <div class="table-toolbar">
+              <input id="entriesSearch" type="search" placeholder="Buscar por nombre, cedula, correo o telefono" />
+              <select id="lotFilter">
+                <option value="all">Todos los participantes</option>
+                <option value="with">Solo con lote</option>
+                <option value="without">Solo sin lote</option>
+              </select>
+              <select id="tableDateFilter">
+                <option value="all">Todas las fechas</option>
+                <option value="today">Solo hoy</option>
+                <option value="7d">Ultimos 7 dias</option>
+                <option value="30d">Ultimos 30 dias</option>
+              </select>
+              <select id="tableSort">
+                <option value="recent">Mas recientes primero</option>
+                <option value="oldest">Mas antiguos primero</option>
+                <option value="name">Nombre A-Z</option>
+              </select>
+            </div>
+
+            <div class="table-note">
+              Mostrando <strong id="visibleCount">0</strong> registro(s) visibles del total.
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Participante</th>
+                    <th>Contacto</th>
+                    <th>Lote</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="entriesTableBody"></tbody>
+              </table>
+            </div>
+
+            <div id="emptyEntriesState" class="empty-state hidden">No hay registros para los filtros actuales.</div>
+          </section>
+
+          <section id="raffle" class="surface raffle-card">
+            <div class="section-heading">
+              <div>
+                <div class="eyebrow">Modulo de sorteo</div>
+                <h3>Generar nuevo sorteo</h3>
+                <p class="section-copy">Usa filtros, suplentes y exclusion de ganadores anteriores.</p>
+              </div>
+            </div>
+
+            <div class="raffle-layout">
+              <form id="raffleForm" class="raffle-form" novalidate>
+                <div class="field">
+                  <label for="raffleTitle">Titulo del sorteo</label>
+                  <input id="raffleTitle" type="text" maxlength="120" placeholder="Sorteo principal Aurora" />
+                </div>
+
+                <div class="columns-2">
+                  <div class="field">
+                    <label for="raffleOwnershipFilter">Participantes</label>
+                    <select id="raffleOwnershipFilter">
+                      <option value="all">Todos</option>
+                      <option value="with">Solo con lote</option>
+                      <option value="without">Solo sin lote</option>
+                    </select>
+                  </div>
+
+                  <div class="field">
+                    <label for="raffleWinnerCount">Ganadores</label>
+                    <input id="raffleWinnerCount" type="number" min="1" max="100" value="1" />
+                  </div>
+                </div>
+
+                <div class="columns-2">
+                  <div class="field">
+                    <label for="raffleReserveCount">Suplentes</label>
+                    <input id="raffleReserveCount" type="number" min="0" max="100" value="0" />
+                  </div>
+
+                  <div class="field">
+                    <label for="raffleNotes">Notas</label>
+                    <input id="raffleNotes" type="text" maxlength="180" placeholder="Observaciones opcionales" />
+                  </div>
+                </div>
+
+                <div class="checkbox-card">
+                  <input id="raffleExcludePrevious" type="checkbox" />
+                  <label for="raffleExcludePrevious">Excluir ganadores y suplentes anteriores.</label>
+                </div>
+
+                <div id="rafflePoolInfo" class="surface info-card"></div>
+                <div id="raffleNotice" class="notice" role="status" aria-live="polite"></div>
+
+                <div class="button-row">
+                  <button id="raffleSubmitBtn" class="btn btn-primary" type="submit">Realizar sorteo</button>
+                  <button id="copyWinnersBtn" class="btn btn-ghost" type="button">Copiar resultado</button>
+                </div>
+              </form>
+
+              <aside class="raffle-stage">
+                <div class="eyebrow">Resultado</div>
+                <h3>Ganadores y suplentes</h3>
+                <p class="helper-line">El ultimo sorteo guardado se actualiza automaticamente aqui.</p>
+                <div id="raffleResults" class="winner-list"></div>
+              </aside>
+            </div>
+          </section>
+
+          <section id="history" class="surface history-card">
+            <div class="section-heading">
+              <div>
+                <h3>Historial de sorteos</h3>
+                <p class="section-copy">Cada resultado queda persistido en `draws.json` para consulta posterior.</p>
+              </div>
+            </div>
+            <div id="drawHistory" class="history-list"></div>
+          </section>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

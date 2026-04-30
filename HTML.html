@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aurora Inmobiliaria | Registro</title>
+    <meta
+      name="description"
+      content="Formulario de registro de clientes de Aurora Inmobiliaria para sorteos y gestion comercial."
+    />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/aurora55logo.webp" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="./assets/aurora-shared.css" />
+    <script src="./assets/aurora-data.js" defer></script>
+    <script src="./assets/aurora-public.js" defer></script>
+
+    <!-- Estilo botón oculto -->
+    <style>
+      .admin-access {
+        position: fixed;
+        bottom: 5px;
+        right: 10px;
+        opacity: 0.2;
+        font-size: 12px;
+        z-index: 999;
+      }
+
+      .admin-access a {
+        color: #000;
+        text-decoration: none;
+      }
+
+      .admin-access:hover {
+        opacity: 1;
+      }
+    </style>
+  </head>
+
+  <body class="page-public">
+    <div class="container">
+      <header class="topbar topbar-public">
+        <div class="brand-block brand-block-public">
+          <div class="brand-wordmark">
+            <img data-brand-logo src="" alt="Aurora Inmobiliaria" />
+          </div>
+          <div class="brand-copy brand-copy-public">
+            <strong>Aurora Inmobiliaria</strong>
+          </div>
+        </div>
+      </header>
+
+      <main class="public-form-shell">
+        <section class="surface form-card public-form-card">
+          <div class="panel-top public-form-head">
+            <div>
+              <div class="eyebrow">Registro de Sorteo Aurora Inmobiliaria S.A.</div>
+              <h1 class="section-title">Completa tus datos</h1>
+              <p class="section-copy">
+                Completa el formulario para quedar registrado en la base de datos del sorteo final del 05 de junio de 2026.
+              </p>
+            </div>
+          </div>
+
+          <form id="clientForm" class="form-grid" novalidate>
+            <input
+              id="companyWebsite"
+              name="companyWebsite"
+              type="text"
+              class="visually-hidden"
+              autocomplete="off"
+              tabindex="-1"
+            />
+
+            <div class="field" data-field="fullName">
+              <label for="fullName">Nombre y apellido</label>
+              <input
+                id="fullName"
+                name="fullName"
+                type="text"
+                placeholder="Ejemplo: Juan Perez"
+                autocomplete="name"
+                maxlength="120"
+                enterkeyhint="next"
+                required
+              />
+              <small class="field-error" data-error-for="fullName"></small>
+            </div>
+
+            <div class="columns-2">
+              <div class="field" data-field="ci">
+                <label for="ci">Cedula de identidad</label>
+                <input
+                  id="ci"
+                  name="ci"
+                  type="text"
+                  inputmode="numeric"
+                  autocomplete="off"
+                  maxlength="12"
+                  placeholder="Ejemplo: 1234567"
+                  enterkeyhint="next"
+                  required
+                />
+                <small class="field-error" data-error-for="ci"></small>
+              </div>
+
+              <div class="field" data-field="phone">
+                <label for="phone">Numero de celular</label>
+                <input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  inputmode="tel"
+                  autocomplete="tel"
+                  maxlength="15"
+                  placeholder="Ejemplo: 0971123456"
+                  enterkeyhint="next"
+                  required
+                />
+                <small class="field-error" data-error-for="phone"></small>
+              </div>
+            </div>
+
+            <div class="field" data-field="email">
+              <label for="email">Correo electronico</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="Ejemplo: cliente@correo.com"
+                autocomplete="email"
+                maxlength="120"
+                enterkeyhint="next"
+                required
+              />
+              <small class="field-error" data-error-for="email"></small>
+            </div>
+
+            <div class="field field-choice" data-field="hasLot">
+              <div class="choice-legend">Tienes lotes con Aurora Inmobiliaria S.A.?</div>
+              <div class="choice-grid">
+                <div class="choice">
+                  <input id="hasLotYes" name="hasLot" type="radio" value="yes" required />
+                  <label for="hasLotYes">Si tengo</label>
+                </div>
+                <div class="choice">
+                  <input id="hasLotNo" name="hasLot" type="radio" value="no" />
+                  <label for="hasLotNo">No tengo</label>
+                </div>
+              </div>
+              <small class="field-error" data-error-for="hasLot"></small>
+            </div>
+
+            <div class="checkbox-card field-consent" data-field="consent">
+              <input id="consent" name="consent" type="checkbox" required />
+              <label for="consent">
+                Autorizo el uso interno de mis datos para gestion comercial y sorteos de Aurora Inmobiliaria S.A.
+              </label>
+            </div>
+            <small class="field-error field-error-consent" data-error-for="consent"></small>
+
+            <div id="formNotice" class="notice" role="status" aria-live="polite"></div>
+
+            <div class="button-row public-submit-row">
+              <button id="submitBtn" class="btn btn-primary" type="submit">Guardar registro</button>
+            </div>
+
+            <p class="helper-line public-form-note">
+              Tiempo estimado de carga: menos de 1 minuto.
+            </p>
+          </form>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        Aurora Inmobiliaria | Formulario de registro de clientes.
+      </footer>
+    </div>
+
+    <div class="admin-access">
+      <a href="./panel-admin-aurora-2026.html">Acceso</a>
+    </div>
+  </body>
+</html>
