@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Aurora Inmobiliaria | Panel Admin (sorteo animado)</title>
-    <meta name="description" content="Panel interno con estadísticas, gráficos, sorteos animados e historial." />
+    <meta name="description" content="Panel interno con estadísticas, gráficos, sorteo animado e historial." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -16,7 +16,7 @@
     <script src="./assets/aurora-admin.js" defer></script>
     
     <style>
-      /* Estilos para la ruleta animada */
+      /* Estilos de la ruleta animada */
       .raffle-stage .winner-reel-container {
         position: relative;
         width: 100%;
@@ -24,7 +24,7 @@
         overflow: hidden;
         background: #1e293b;
         border-radius: 16px;
-        display: none; /* se muestra al iniciar la animación */
+        display: none;           /* se muestra al iniciar la animación */
         align-items: center;
         justify-content: center;
         margin-top: 1rem;
@@ -45,7 +45,7 @@
         text-align: center;
         min-width: 260px;
       }
-      /* Mostrar / ocultar lista de ganadores */
+      /* Control de visibilidad */
       .raffle-stage .winner-list {
         display: none;
       }
@@ -312,10 +312,10 @@
       </main>
     </div>
 
-    <!-- ==================== SCRIPT DE LA RULETA ==================== -->
+    <!-- ==================== SCRIPT DE LA RULETA (mejorado) ==================== -->
     <script>
       (function() {
-        // Obtener registros de múltiples fuentes
+        // Obtiene registros de todas las fuentes posibles
         async function fetchFromServer() {
           try {
             const res = await fetch('/api/entries');
@@ -346,28 +346,34 @@
         }
 
         async function getRecords() {
-          // 1. Variables globales conocidas
+          // 1. Variables globales
           for (let arr of [window.auroraRecords, window.__auroraRecords, window.allRecords, window.entries, window.dataEntries, window.state?.entries]) {
             if (Array.isArray(arr) && arr.length) return arr;
           }
-          // 2. Tabla
+          // 2. Tabla HTML
           let tbl = fromTable();
           if (tbl.length) return tbl;
-          // 3. Backend
+          // 3. API del backend
           const srv = await fetchFromServer();
           if (srv && srv.length) return srv;
           // 4. Último intento tabla
           return fromTable();
         }
 
+        // Animación de la ruleta (giro largo con frenada suave)
         function animateRaffle(pool, winners, reserves, firstWinner) {
           const reelContainer = document.getElementById('reelContainer');
           const reel = document.getElementById('reel');
           const stage = document.getElementById('raffleStage');
           const resultsDiv = document.getElementById('raffleResults');
 
+          // Repetir el pool 15 veces para un carrete mucho más largo
+          const repeat = 15;
           const items = [];
-          for (let i = 0; i < 6; i++) pool.forEach(r => items.push(r.fullName));
+          for (let i = 0; i < repeat; i++) {
+            pool.forEach(r => items.push(r.fullName));
+          }
+          // El ganador se añade al final, justo donde debe detenerse
           items.push(firstWinner);
 
           reel.innerHTML = '';
@@ -382,67 +388,86 @@
           reelContainer.style.display = 'flex';
           resultsDiv.innerHTML = '';
 
-          reelContainer.offsetHeight; // reflow
+          // Forzar reflow para obtener medidas reales
+          reelContainer.offsetHeight; 
           const containerW = reelContainer.clientWidth;
           const last = reel.lastElementChild;
           const lastCenter = last.offsetLeft + last.offsetWidth / 2;
           const target = -(lastCenter - containerW / 2);
 
-          let x = 0, speed = 20, stopped = false;
+          // Parámetros de animación mejorados
+          let x = 0;
+          let speed = 35;                // velocidad inicial más alta (antes 20)
+          const deceleration = 0.9925;   // freno muy suave (antes 0.98)
+          const minSpeed = 0.15;         // casi parado
+          let stopped = false;
           reel.style.transform = `translateX(0px)`;
 
           function step() {
             if (stopped) return;
             x -= speed;
             reel.style.transform = `translateX(${x}px)`;
-            speed *= 0.98;
+            speed *= deceleration;
+
             const dist = target - x;
-            if (speed < 0.5 && Math.abs(dist) < 40) {
-              reel.style.transition = 'transform 0.6s ease-out';
+
+            // Si ya casi no se mueve y estamos cerca del objetivo, frenamos con suavidad
+            if (speed < minSpeed && Math.abs(dist) < 25) {
+              reel.style.transition = 'transform 0.7s cubic-bezier(0.25, 0.1, 0.25, 1)';
               reel.style.transform = `translateX(${target}px)`;
               stopped = true;
-              setTimeout(() => show(winners, reserves), 1500);
+              setTimeout(() => showResults(winners, reserves), 1500);
               return;
             }
-            if (x < target - 800 && speed < 2) {
+
+            // Si se pasa mucho del objetivo y va lento, forzamos parada
+            if (x < target - 1000 && speed < 2) {
               reel.style.transition = 'transform 0.8s ease-out';
               reel.style.transform = `translateX(${target}px)`;
               stopped = true;
-              setTimeout(() => show(winners, reserves), 1200);
+              setTimeout(() => showResults(winners, reserves), 1200);
               return;
             }
+
             requestAnimationFrame(step);
           }
+
           requestAnimationFrame(step);
+        }
 
-          function show(win, res) {
-            reelContainer.style.display = 'none';
-            stage.classList.add('show-winners');
-            let html = '';
-            if (win.length) {
-              html += '<div class="winner-group"><h4>🏆 Ganadores</h4>';
-              win.forEach(w => html += `<div class="winner-entry">${w.fullName} <span class="winner-meta">CI: ${w.ci} | 📞 ${w.phone}</span></div>`);
-              html += '</div>';
-            }
-            if (res.length) {
-              html += '<div class="winner-group"><h4>🔹 Suplentes</h4>';
-              res.forEach(r => html += `<div class="winner-entry">${r.fullName} <span class="winner-meta">CI: ${r.ci} | 📞 ${r.phone}</span></div>`);
-              html += '</div>';
-            }
-            resultsDiv.innerHTML = html || '<p>Sin resultados.</p>';
+        function showResults(winners, reserves) {
+          const reelContainer = document.getElementById('reelContainer');
+          const stage = document.getElementById('raffleStage');
+          const resultsDiv = document.getElementById('raffleResults');
 
-            const draw = {
-              date: new Date().toISOString(),
-              title: document.getElementById('raffleTitle').value || 'Sorteo Aurora',
-              winners: win.map(w => ({ fullName: w.fullName, ci: w.ci, phone: w.phone })),
-              reserves: res.map(r => ({ fullName: r.fullName, ci: r.ci, phone: r.phone })),
-              notes: document.getElementById('raffleNotes').value
-            };
-            const hist = JSON.parse(localStorage.getItem('auroraDrawHistory') || '[]');
-            hist.unshift(draw);
-            localStorage.setItem('auroraDrawHistory', JSON.stringify(hist));
-            if (typeof window.refreshDrawHistory === 'function') window.refreshDrawHistory();
+          reelContainer.style.display = 'none';
+          stage.classList.add('show-winners');
+
+          let html = '';
+          if (winners.length) {
+            html += '<div class="winner-group"><h4>🏆 Ganadores</h4>';
+            winners.forEach(w => html += `<div class="winner-entry">${w.fullName} <span class="winner-meta">CI: ${w.ci} | 📞 ${w.phone}</span></div>`);
+            html += '</div>';
           }
+          if (reserves.length) {
+            html += '<div class="winner-group"><h4>🔹 Suplentes</h4>';
+            reserves.forEach(r => html += `<div class="winner-entry">${r.fullName} <span class="winner-meta">CI: ${r.ci} | 📞 ${r.phone}</span></div>`);
+            html += '</div>';
+          }
+          resultsDiv.innerHTML = html || '<p>Sin resultados.</p>';
+
+          // Guardar en historial local
+          const draw = {
+            date: new Date().toISOString(),
+            title: document.getElementById('raffleTitle').value || 'Sorteo Aurora',
+            winners: winners.map(w => ({ fullName: w.fullName, ci: w.ci, phone: w.phone })),
+            reserves: reserves.map(r => ({ fullName: r.fullName, ci: r.ci, phone: r.phone })),
+            notes: document.getElementById('raffleNotes').value
+          };
+          const hist = JSON.parse(localStorage.getItem('auroraDrawHistory') || '[]');
+          hist.unshift(draw);
+          localStorage.setItem('auroraDrawHistory', JSON.stringify(hist));
+          if (typeof window.refreshDrawHistory === 'function') window.refreshDrawHistory();
         }
 
         function initRaffle() {
