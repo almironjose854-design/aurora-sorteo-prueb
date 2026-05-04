@@ -1,472 +1,561 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Aurora Inmobiliaria | Panel Admin</title>
-  <meta name="description" content="Panel interno con sorteo animado." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <style>
-    /* Estilos base compartidos (simplificados) */
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: 'Rubik', sans-serif; background: #f1f5f9; color: #1e293b; }
-    .container { max-width: 1200px; margin: 0 auto; padding: 1rem; }
-    .topbar { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 1rem 2rem; border-radius: 12px; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .brand-block { display: flex; align-items: center; gap: 1rem; }
-    .brand-wordmark img { height: 40px; }
-    .meta-row { display: flex; gap: 1rem; }
-    .meta-chip { background: #e2e8f0; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem; }
-    .meta-chip-live { background: #dcfce7; color: #166534; }
-    .auth-card { max-width: 400px; margin: 2rem auto; background: #fff; border-radius: 16px; padding: 2rem; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
-    .panel-top { text-align: center; margin-bottom: 1.5rem; }
-    .eyebrow { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; }
-    .section-title { font-size: 1.8rem; font-weight: 800; margin: 0.5rem 0; }
-    .auth-copy { color: #475569; }
-    .auth-form { display: flex; flex-direction: column; gap: 1rem; }
-    .columns-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .field { display: flex; flex-direction: column; gap: 0.3rem; }
-    .field label { font-weight: 600; }
-    .field input, .field select { padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 8px; }
-    .btn { padding: 0.7rem 1.2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-    .btn-primary { background: #d32f2f; color: #fff; }
-    .btn-primary:hover { background: #b71c1c; }
-    .btn-secondary { background: #1e293b; color: #fff; }
-    .btn-ghost { background: transparent; border: 1px solid #cbd5e1; }
-    .btn-ghost:hover { background: #f1f5f9; }
-    .btn-danger { background: #ef4444; color: #fff; }
-    .dashboard-stack { display: flex; flex-direction: column; gap: 1.5rem; }
-    .dashboard-hero { background: #fff; border-radius: 16px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .section-heading { margin-bottom: 1rem; }
-    .dashboard-nav { display: flex; gap: 0.5rem; background: #fff; padding: 0.5rem; border-radius: 12px; }
-    .dashboard-nav a { padding: 0.5rem 1rem; text-decoration: none; color: #475569; font-weight: 500; border-radius: 8px; }
-    .dashboard-nav a:hover { background: #f1f5f9; }
-    .section-card, .table-card, .raffle-card, .history-card { background: #fff; border-radius: 16px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .table-toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
-    .raffle-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-    @media (max-width: 768px) { .raffle-layout { grid-template-columns: 1fr; } }
-    .raffle-form { display: flex; flex-direction: column; gap: 1rem; }
-    .checkbox-card { display: flex; align-items: center; gap: 0.5rem; }
-    .winner-reel-container {
-      position: relative;
-      width: 100%;
-      height: 160px;
-      background: linear-gradient(145deg, #0f172a, #1e293b);
-      border-radius: 20px;
-      overflow: hidden;
-      display: none;
-      margin-top: 1.5rem;
-      box-shadow: inset 0 0 30px rgba(0,0,0,0.6), 0 0 20px rgba(250,204,21,0.2);
-    }
-    .winner-reel-list {
-      position: absolute;
-      left: 0;
-      right: 0;
-      will-change: transform;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .reel-item {
-      padding: 12px 20px;
-      font-size: 2.2rem;
-      font-weight: 800;
-      color: #facc15;
-      text-transform: uppercase;
-      line-height: 1.3;
-      text-align: center;
-      white-space: nowrap;
-      opacity: 0.85;
-    }
-    .winner-list { display: none; }
-    .show-winners .winner-list { display: block; }
-    .show-winners .winner-reel-container { display: none; }
-    .winner-entry { padding: 0.5rem 0; font-weight: 600; }
-    .notice { color: #ef4444; font-size: 0.9rem; }
-    .hidden { display: none !important; }
-  </style>
-</head>
-<body class="page-admin">
-  <div class="container">
-    <!-- Header -->
-    <header class="topbar">
-      <div class="brand-block">
-        <div class="brand-wordmark"><img src="assets/aurora55logo.webp" alt="Aurora" /></div>
-        <div class="brand-copy">
-          <span class="eyebrow-text">Acceso interno</span>
-          <strong>Panel administrativo</strong>
-          <span>Estadísticas y sorteos</span>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aurora Inmobiliaria | Panel Admin</title>
+    <meta name="description" content="Panel interno con estadísticas, gráficos, sorteo animado e historial." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./assets/aurora-shared.css" />
+    <style>
+      /* Ruleta vertical (compatible con el diseño original) */
+      .raffle-stage .winner-reel-container {
+        position: relative;
+        width: 100%;
+        height: 160px;
+        background: linear-gradient(145deg, #0f172a, #1e293b);
+        border-radius: 20px;
+        overflow: hidden;
+        display: none;
+        margin-top: 1.5rem;
+        box-shadow: inset 0 0 30px rgba(0,0,0,0.6), 0 0 20px rgba(250,204,21,0.2);
+      }
+      .winner-reel-list {
+        position: absolute;
+        left: 0;
+        right: 0;
+        will-change: transform;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .reel-item {
+        padding: 12px 20px;
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #facc15;
+        text-transform: uppercase;
+        line-height: 1.3;
+        text-align: center;
+        white-space: nowrap;
+        opacity: 0.85;
+      }
+      .raffle-stage .winner-list {
+        display: none;
+      }
+      .raffle-stage.show-winners .winner-list {
+        display: block;
+      }
+      .raffle-stage.show-winners .winner-reel-container {
+        display: none;
+      }
+    </style>
+  </head>
+  <body class="page-admin">
+    <div class="container">
+      <!-- Header original -->
+      <header class="topbar">
+        <div class="brand-block">
+          <div class="brand-wordmark">
+            <img data-brand-logo src="" alt="Aurora Inmobiliaria" />
+          </div>
+          <div class="brand-copy">
+            <span class="eyebrow-text">Acceso interno</span>
+            <strong>Panel administrativo de registros y sorteos</strong>
+            <span>Estadísticas, control de base y sorteos desde el backend JSON.</span>
+          </div>
         </div>
-      </div>
-      <div class="meta-row">
-        <div class="meta-chip meta-chip-live">JSON activo</div>
-        <div class="meta-chip"><strong id="headerCount">0</strong> registros</div>
-      </div>
-    </header>
-
-    <main class="admin-main">
-      <!-- Login -->
-      <section id="loginView" class="surface auth-card">
-        <div class="panel-top">
-          <h1 class="section-title">Ingresa al panel</h1>
-          <p class="auth-copy">Credenciales: admin / admin</p>
+        <div class="meta-row">
+          <div class="meta-chip meta-chip-live">JSON activo</div>
+          <div class="meta-chip"><strong id="headerCount">0</strong> registros</div>
         </div>
-        <form id="adminLoginForm" class="auth-form">
-          <div class="field">
-            <label for="adminUser">Usuario</label>
-            <input id="adminUser" name="adminUser" type="text" required />
-          </div>
-          <div class="field">
-            <label for="adminPassword">Contraseña</label>
-            <input id="adminPassword" name="adminPassword" type="password" required />
-          </div>
-          <div id="loginNotice" class="notice"></div>
-          <button class="btn btn-secondary" type="submit">Ingresar</button>
-        </form>
-      </section>
+      </header>
 
-      <!-- Dashboard (oculto hasta login) -->
-      <section id="dashboardView" class="dashboard-stack hidden">
-        <section id="overview" class="dashboard-hero">
-          <div class="section-heading">
-            <div class="eyebrow">Vista ejecutiva</div>
-            <h2 class="section-title">Centro de control</h2>
-            <p class="section-copy">Administra registros y realiza sorteos.</p>
+      <main class="admin-main">
+        <!-- Login -->
+        <section id="loginView" class="surface auth-card">
+          <div class="panel-top">
+            <div>
+              <div class="eyebrow">Login administrativo</div>
+              <h1 class="section-title">Ingresa al panel interno</h1>
+              <p class="auth-copy">Usa las credenciales configuradas en el servidor Node.js.</p>
+            </div>
+            <div class="logo-badge">
+              <img data-brand-logo src="" alt="Aurora Inmobiliaria" />
+            </div>
           </div>
-          <div class="button-row">
-            <button id="refreshBtn" class="btn btn-ghost">Actualizar</button>
-            <button id="logoutBtn" class="btn btn-danger">Cerrar sesión</button>
-          </div>
-          <div id="systemStatus" class="system-strip"></div>
-        </section>
-
-        <nav class="dashboard-nav">
-          <a href="#records">Registros</a>
-          <a href="#raffle">Sorteo</a>
-          <a href="#history">Historial</a>
-        </nav>
-
-        <!-- Tabla de registros -->
-        <section id="records" class="table-card">
-          <div class="section-heading"><h3>Registros</h3></div>
-          <div class="table-toolbar">
-            <input id="entriesSearch" type="search" placeholder="Buscar..." />
-            <select id="lotFilter">
-              <option value="all">Todos</option>
-              <option value="with">Con lote</option>
-              <option value="without">Sin lote</option>
-            </select>
-          </div>
-          <div class="table-note">Mostrando <strong id="visibleCount">0</strong> registro(s).</div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Participante</th><th>Contacto</th><th>Lote</th><th>Acciones</th></tr></thead>
-              <tbody id="entriesTableBody"></tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- Sorteo con ruleta vertical -->
-        <section id="raffle" class="raffle-card">
-          <div class="section-heading">
-            <div class="eyebrow">Módulo de sorteo</div>
-            <h3>Generar nuevo sorteo</h3>
-          </div>
-          <div class="raffle-layout">
-            <form id="raffleForm" class="raffle-form">
+          <form id="adminLoginForm" class="auth-form" novalidate>
+            <div class="columns-2">
               <div class="field">
-                <label for="raffleTitle">Título</label>
-                <input id="raffleTitle" type="text" placeholder="Sorteo Aurora" />
+                <label for="adminUser">Usuario</label>
+                <input id="adminUser" name="adminUser" type="text" autocomplete="username" required />
               </div>
-              <div class="columns-2">
-                <div class="field">
-                  <label for="raffleOwnershipFilter">Participantes</label>
-                  <select id="raffleOwnershipFilter">
-                    <option value="all">Todos</option>
-                    <option value="with">Con lote</option>
-                    <option value="without">Sin lote</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label for="raffleWinnerCount">Ganadores</label>
-                  <input id="raffleWinnerCount" type="number" min="1" max="100" value="1" />
-                </div>
+              <div class="field">
+                <label for="adminPassword">Contraseña</label>
+                <input id="adminPassword" name="adminPassword" type="password" autocomplete="current-password" required />
               </div>
-              <div class="columns-2">
-                <div class="field">
-                  <label for="raffleReserveCount">Suplentes</label>
-                  <input id="raffleReserveCount" type="number" min="0" max="100" value="0" />
-                </div>
-                <div class="field">
-                  <label for="raffleNotes">Notas</label>
-                  <input id="raffleNotes" type="text" placeholder="Observaciones" />
-                </div>
+            </div>
+            <div id="loginNotice" class="notice" role="status" aria-live="polite"></div>
+            <button class="btn btn-secondary" type="submit">Ingresar al panel</button>
+          </form>
+        </section>
+
+        <!-- Dashboard (oculto hasta login exitoso) -->
+        <section id="dashboardView" class="dashboard-stack hidden">
+          <!-- Overview -->
+          <section id="overview" class="surface dashboard-hero">
+            <div class="section-heading">
+              <div>
+                <div class="eyebrow">Vista ejecutiva</div>
+                <h2 class="section-title">Centro de control de la campaña</h2>
+                <p class="section-copy">
+                  Analiza el comportamiento del formulario, administra la base y ejecuta sorteos con datos reales.
+                </p>
               </div>
-              <div class="checkbox-card">
-                <input id="raffleExcludePrevious" type="checkbox" />
-                <label for="raffleExcludePrevious">Excluir ganadores anteriores</label>
-              </div>
-              <div id="raffleNotice" class="notice"></div>
               <div class="button-row">
-                <button id="raffleSubmitBtn" class="btn btn-primary" type="submit">Realizar sorteo</button>
+                <a class="btn btn-ghost" href="./" data-app-route="">Ver formulario público</a>
+                <button id="refreshBtn" class="btn btn-ghost" type="button">Actualizar</button>
+                <button id="exportCsvBtn" class="btn btn-primary" type="button">CSV de la vista</button>
+                <button id="exportExcelBtn" class="btn btn-ghost" type="button">Excel</button>
+                <button id="exportPdfBtn" class="btn btn-ghost" type="button">PDF</button>
+                <button id="exportTxtBtn" class="btn btn-ghost" type="button">TXT</button>
+                <button id="exportHtmlBtn" class="btn btn-ghost" type="button">HTML</button>
+                <button id="exportJsonBtn" class="btn btn-secondary" type="button">Backup JSON</button>
+                <button id="logoutBtn" class="btn btn-danger" type="button">Cerrar sesión</button>
               </div>
-            </form>
+            </div>
+            <div class="system-strip" id="systemStatus"></div>
+          </section>
 
-            <aside class="raffle-stage" id="raffleStage">
-              <div class="eyebrow">Resultado</div>
-              <h3>Ganadores y suplentes</h3>
-              <div id="reelContainer" class="winner-reel-container">
-                <div id="reelList" class="winner-reel-list"></div>
+          <nav class="dashboard-nav">
+            <a href="#overview">Resumen</a>
+            <a href="#insights">Insights</a>
+            <a href="#charts">Gráficos</a>
+            <a href="#records">Registros</a>
+            <a href="#raffle">Sorteo</a>
+            <a href="#history">Historial</a>
+          </nav>
+
+          <!-- Sección de análisis (placeholder) -->
+          <section class="surface section-card">
+            <div class="section-heading">
+              <div>
+                <h3>Periodo de análisis</h3>
+                <p class="section-copy">Puedes leer las métricas sobre toda la base o sobre una ventana reciente.</p>
               </div>
-              <div id="raffleResults" class="winner-list"></div>
-            </aside>
+              <div class="field field-inline">
+                <label for="analyticsPeriod">Periodo</label>
+                <select id="analyticsPeriod">
+                  <option value="all">Toda la base</option>
+                  <option value="today">Solo hoy</option>
+                  <option value="7d">Últimos 7 días</option>
+                  <option value="30d">Últimos 30 días</option>
+                </select>
+              </div>
+            </div>
+          </section>
+
+          <section id="statsGrid" class="stats-grid"></section>
+
+          <div class="dashboard-grid">
+            <section id="insights" class="surface section-card span-4">
+              <div class="section-heading"><div><h3>Dominios de correo más frecuentes</h3><p class="section-copy">Muestra qué tipos de correo predominan dentro de la base.</p></div></div>
+              <div id="domainList" class="insight-list"></div>
+            </section>
+            <section class="surface section-card span-4">
+              <div class="section-heading"><div><h3>Prefijos de celular más frecuentes</h3><p class="section-copy">Ayuda a detectar rápidamente la concentración principal de contactos.</p></div></div>
+              <div id="prefixList" class="insight-list"></div>
+            </section>
+            <section class="surface section-card span-4">
+              <div class="section-heading"><div><h3>Calidad de datos</h3><p class="section-copy">Detecta teléfonos, correos o nombres repetidos para revisión.</p></div></div>
+              <div id="qualityList" class="insight-list"></div>
+            </section>
+            <section class="surface section-card span-6">
+              <div class="section-heading"><div><h3>Actividad reciente</h3><p class="section-copy">Altas, eliminaciones y sorteos persistidos por el backend.</p></div></div>
+              <div id="activityList" class="insight-list"></div>
+            </section>
+            <section class="surface section-card span-6">
+              <div class="section-heading"><div><h3>Último sorteo</h3><p class="section-copy">Resumen inmediato del resultado más reciente.</p></div></div>
+              <div id="latestDrawResult" class="empty-state">Aún no se realizaron sorteos.</div>
+            </section>
           </div>
+
+          <div id="charts" class="dashboard-grid">
+            <section class="surface chart-card span-6">
+              <div class="section-heading"><div><h3>Ingresos por día</h3><p class="section-copy">Visualiza el ritmo de carga durante el periodo seleccionado.</p></div></div>
+              <div class="chart-box"><canvas id="chartDaily"></canvas></div>
+            </section>
+            <section class="surface chart-card span-6">
+              <div class="section-heading"><div><h3>Distribución con y sin lote</h3><p class="section-copy">Comparación simple de tipos de participantes.</p></div></div>
+              <div class="chart-box"><canvas id="chartOwnership"></canvas></div>
+            </section>
+          </div>
+
+          <!-- Tabla de registros (original) -->
+          <section id="records" class="surface table-card">
+            <div class="section-heading">
+              <div><h3>Registros guardados</h3><p class="section-copy">Filtra, revisa y depura la base leída desde el backend en Node.js.</p></div>
+            </div>
+            <div class="table-toolbar">
+              <input id="entriesSearch" type="search" placeholder="Buscar por nombre, cédula, correo o teléfono" />
+              <select id="lotFilter">
+                <option value="all">Todos los participantes</option>
+                <option value="with">Solo con lote</option>
+                <option value="without">Solo sin lote</option>
+              </select>
+              <select id="tableDateFilter">
+                <option value="all">Todas las fechas</option>
+                <option value="today">Solo hoy</option>
+                <option value="7d">Últimos 7 días</option>
+                <option value="30d">Últimos 30 días</option>
+              </select>
+              <select id="tableSort">
+                <option value="recent">Más recientes primero</option>
+                <option value="oldest">Más antiguos primero</option>
+                <option value="name">Nombre A-Z</option>
+              </select>
+            </div>
+            <div class="table-note">Mostrando <strong id="visibleCount">0</strong> registro(s) visibles del total.</div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Participante</th><th>Contacto</th><th>Lote</th><th>Fecha</th><th>Acciones</th></tr>
+                </thead>
+                <tbody id="entriesTableBody"></tbody>
+              </table>
+            </div>
+            <div id="emptyEntriesState" class="empty-state hidden">No hay registros para los filtros actuales.</div>
+          </section>
+
+          <!-- Sorteo con ruleta vertical mejorada -->
+          <section id="raffle" class="surface raffle-card">
+            <div class="section-heading">
+              <div>
+                <div class="eyebrow">Módulo de sorteo</div>
+                <h3>Generar nuevo sorteo</h3>
+                <p class="section-copy">Usa filtros, suplentes y exclusión de ganadores anteriores.</p>
+              </div>
+            </div>
+            <div class="raffle-layout">
+              <form id="raffleForm" class="raffle-form" novalidate>
+                <div class="field">
+                  <label for="raffleTitle">Título del sorteo</label>
+                  <input id="raffleTitle" type="text" maxlength="120" placeholder="Sorteo principal Aurora" />
+                </div>
+                <div class="columns-2">
+                  <div class="field">
+                    <label for="raffleOwnershipFilter">Participantes</label>
+                    <select id="raffleOwnershipFilter">
+                      <option value="all">Todos</option>
+                      <option value="with">Solo con lote</option>
+                      <option value="without">Solo sin lote</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="raffleWinnerCount">Ganadores</label>
+                    <input id="raffleWinnerCount" type="number" min="1" max="100" value="1" />
+                  </div>
+                </div>
+                <div class="columns-2">
+                  <div class="field">
+                    <label for="raffleReserveCount">Suplentes</label>
+                    <input id="raffleReserveCount" type="number" min="0" max="100" value="0" />
+                  </div>
+                  <div class="field">
+                    <label for="raffleNotes">Notas</label>
+                    <input id="raffleNotes" type="text" maxlength="180" placeholder="Observaciones opcionales" />
+                  </div>
+                </div>
+                <div class="checkbox-card">
+                  <input id="raffleExcludePrevious" type="checkbox" />
+                  <label for="raffleExcludePrevious">Excluir ganadores y suplentes anteriores.</label>
+                </div>
+                <div id="rafflePoolInfo" class="surface info-card"></div>
+                <div id="raffleNotice" class="notice" role="status" aria-live="polite"></div>
+                <div class="button-row">
+                  <button id="raffleSubmitBtn" class="btn btn-primary" type="submit">Realizar sorteo</button>
+                  <button id="copyWinnersBtn" class="btn btn-ghost" type="button">Copiar resultado</button>
+                </div>
+              </form>
+
+              <aside class="raffle-stage" id="raffleStage">
+                <div class="eyebrow">Resultado</div>
+                <h3>Ganadores y suplentes</h3>
+                <p class="helper-line">El último sorteo guardado se actualiza automáticamente aquí.</p>
+                <!-- Contenedor de la ruleta vertical -->
+                <div id="reelContainer" class="winner-reel-container">
+                  <div id="reelList" class="winner-reel-list"></div>
+                </div>
+                <div id="raffleResults" class="winner-list"></div>
+              </aside>
+            </div>
+          </section>
+
+          <!-- Historial -->
+          <section id="history" class="surface history-card">
+            <div class="section-heading">
+              <div>
+                <h3>Historial de sorteos</h3>
+                <p class="section-copy">Cada resultado queda persistido en `draws.json` para consulta posterior.</p>
+              </div>
+            </div>
+            <div id="drawHistory" class="history-list"></div>
+          </section>
         </section>
+      </main>
+    </div>
 
-        <!-- Historial -->
-        <section id="history" class="history-card">
-          <div class="section-heading"><h3>Historial de sorteos</h3></div>
-          <div id="drawHistory"></div>
-        </section>
-      </section>
-    </main>
-  </div>
+    <!-- Script autónomo: lógica del panel + ruleta vertical -->
+    <script>
+      (function() {
+        // Datos de ejemplo (se guardan en localStorage)
+        const SAMPLE = [
+          { fullName: 'AMANCIO DUTRA', ci: '6456645', phone: '0971123456', hasLot: 'yes', date: '2026-05-01' },
+          { fullName: 'MARIA GONZALEZ', ci: '1234567', phone: '0981123456', hasLot: 'no', date: '2026-05-02' },
+          { fullName: 'JUAN PEREZ', ci: '8765432', phone: '0991123456', hasLot: 'yes', date: '2026-05-03' },
+          { fullName: 'SOFIA LOPEZ', ci: '3456789', phone: '0972123456', hasLot: 'no', date: '2026-05-04' },
+          { fullName: 'CARLOS MARTINEZ', ci: '2345678', phone: '0982123456', hasLot: 'yes', date: '2026-05-05' }
+        ];
 
-  <script>
-    (function() {
-      // Datos de ejemplo persistentes
-      const SAMPLE = [
-        { fullName: 'AMANCIO DUTRA', ci: '6456645', phone: '0971123456', hasLot: 'yes' },
-        { fullName: 'MARIA GONZALEZ', ci: '1234567', phone: '0981123456', hasLot: 'no' },
-        { fullName: 'JUAN PEREZ', ci: '8765432', phone: '0991123456', hasLot: 'yes' },
-        { fullName: 'SOFIA LOPEZ', ci: '3456789', phone: '0972123456', hasLot: 'no' },
-        { fullName: 'CARLOS MARTINEZ', ci: '2345678', phone: '0982123456', hasLot: 'yes' }
-      ];
+        let entries = JSON.parse(localStorage.getItem('auroraEntries')) || SAMPLE;
+        let drawHistory = JSON.parse(localStorage.getItem('auroraDrawHistory')) || [];
 
-      let entries = JSON.parse(localStorage.getItem('auroraEntries')) || [...SAMPLE];
-      let drawHistory = JSON.parse(localStorage.getItem('auroraDrawHistory')) || [];
+        // Referencias DOM
+        const headerCount = document.getElementById('headerCount');
+        const tbody = document.getElementById('entriesTableBody');
+        const visibleCount = document.getElementById('visibleCount');
+        const loginView = document.getElementById('loginView');
+        const dashboardView = document.getElementById('dashboardView');
+        const loginNotice = document.getElementById('loginNotice');
+        const systemStatus = document.getElementById('systemStatus');
+        const raffleNotice = document.getElementById('raffleNotice');
+        const reelContainer = document.getElementById('reelContainer');
+        const reelList = document.getElementById('reelList');
+        const raffleStage = document.getElementById('raffleStage');
+        const raffleResults = document.getElementById('raffleResults');
+        const drawHistoryDiv = document.getElementById('drawHistory');
+        const latestDrawResult = document.getElementById('latestDrawResult');
 
-      const headerCount = document.getElementById('headerCount');
-      const tbody = document.getElementById('entriesTableBody');
-      const visibleCount = document.getElementById('visibleCount');
-      const loginView = document.getElementById('loginView');
-      const dashboardView = document.getElementById('dashboardView');
-      const loginNotice = document.getElementById('loginNotice');
-      const systemStatus = document.getElementById('systemStatus');
-      const raffleNotice = document.getElementById('raffleNotice');
-      const reelContainer = document.getElementById('reelContainer');
-      const reelList = document.getElementById('reelList');
-      const raffleStage = document.getElementById('raffleStage');
-      const raffleResults = document.getElementById('raffleResults');
-      const drawHistoryDiv = document.getElementById('drawHistory');
+        function updateHeaderCount() {
+          headerCount.textContent = entries.length;
+        }
 
-      function updateHeaderCount() {
-        headerCount.textContent = entries.length;
-      }
-
-      function renderTable(filtered = entries) {
-        tbody.innerHTML = '';
-        visibleCount.textContent = filtered.length;
-        filtered.forEach(e => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${e.fullName}</td>
-            <td>CI: ${e.ci} | 📞 ${e.phone}</td>
-            <td>${e.hasLot === 'yes' ? 'Sí' : 'No'}</td>
-            <td><button data-delete="${e.ci}" class="btn btn-ghost" style="padding:0.2rem 0.5rem;">🗑️</button></td>
-          `;
-          tbody.appendChild(tr);
-        });
-        document.querySelectorAll('[data-delete]').forEach(btn => {
-          btn.addEventListener('click', function() {
-            const ci = this.getAttribute('data-delete');
-            entries = entries.filter(e => e.ci !== ci);
-            localStorage.setItem('auroraEntries', JSON.stringify(entries));
-            filterTable();
-            updateHeaderCount();
+        function renderTable(filtered = entries) {
+          tbody.innerHTML = '';
+          visibleCount.textContent = filtered.length;
+          filtered.forEach(e => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${e.fullName}</td>
+              <td>CI: ${e.ci} | 📞 ${e.phone}</td>
+              <td>${e.hasLot === 'yes' ? 'Sí' : 'No'}</td>
+              <td>${e.date || '—'}</td>
+              <td><button data-delete="${e.ci}" class="btn btn-ghost" style="padding:0.2rem 0.5rem;">🗑️</button></td>
+            `;
+            tbody.appendChild(tr);
           });
-        });
-      }
-
-      function filterTable() {
-        const search = document.getElementById('entriesSearch').value.toLowerCase();
-        const lot = document.getElementById('lotFilter').value;
-        let filtered = entries;
-        if (search) filtered = filtered.filter(e => e.fullName.toLowerCase().includes(search) || e.ci.includes(search));
-        if (lot === 'with') filtered = filtered.filter(e => e.hasLot === 'yes');
-        if (lot === 'without') filtered = filtered.filter(e => e.hasLot === 'no');
-        renderTable(filtered);
-      }
-
-      document.getElementById('entriesSearch').addEventListener('input', filterTable);
-      document.getElementById('lotFilter').addEventListener('change', filterTable);
-
-      // Login
-      document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const user = document.getElementById('adminUser').value.trim();
-        const pass = document.getElementById('adminPassword').value.trim();
-        if (user === 'admin' && pass === 'admin') {
-          loginView.style.display = 'none';
-          dashboardView.classList.remove('hidden');
-          renderTable();
-          updateHeaderCount();
-          systemStatus.textContent = '✅ Datos cargados desde almacenamiento local.';
-          renderDrawHistory();
-        } else {
-          loginNotice.textContent = 'Credenciales incorrectas. Usa admin / admin.';
+          document.querySelectorAll('[data-delete]').forEach(btn => {
+            btn.addEventListener('click', function() {
+              const ci = this.getAttribute('data-delete');
+              entries = entries.filter(e => e.ci !== ci);
+              localStorage.setItem('auroraEntries', JSON.stringify(entries));
+              filterTable();
+              updateHeaderCount();
+            });
+          });
         }
-      });
 
-      document.getElementById('logoutBtn').addEventListener('click', function() {
-        loginView.style.display = '';
-        dashboardView.classList.add('hidden');
-        document.getElementById('adminLoginForm').reset();
-        loginNotice.textContent = '';
-      });
-
-      // Ruleta vertical
-      function animateRaffle(pool, winners, reserves, firstWinner) {
-        let sequence = [];
-        const rounds = 15;
-        for (let i = 0; i < rounds; i++) {
-          const shuffled = [...pool].sort(() => Math.random() - 0.5);
-          sequence.push(...shuffled.map(p => p.fullName));
+        function filterTable() {
+          const search = document.getElementById('entriesSearch').value.toLowerCase();
+          const lot = document.getElementById('lotFilter').value;
+          // Filtros de fecha y orden no implementados para simplificar, pero puedes añadirlos
+          let filtered = entries;
+          if (search) filtered = filtered.filter(e => e.fullName.toLowerCase().includes(search) || e.ci.includes(search));
+          if (lot === 'with') filtered = filtered.filter(e => e.hasLot === 'yes');
+          if (lot === 'without') filtered = filtered.filter(e => e.hasLot === 'no');
+          renderTable(filtered);
         }
-        sequence.push(firstWinner);
 
-        reelList.innerHTML = '';
-        sequence.forEach(name => {
-          const div = document.createElement('div');
-          div.className = 'reel-item';
-          div.textContent = name;
-          reelList.appendChild(div);
-        });
+        document.getElementById('entriesSearch').addEventListener('input', filterTable);
+        document.getElementById('lotFilter').addEventListener('change', filterTable);
 
-        raffleStage.classList.remove('show-winners');
-        reelContainer.style.display = 'block';
-        raffleResults.innerHTML = '';
-
-        const ITEM_HEIGHT = 70;
-        const CONTAINER_HEIGHT = reelContainer.clientHeight;
-        const totalItems = sequence.length;
-        const startY = (CONTAINER_HEIGHT - ITEM_HEIGHT) / 2;
-        const targetY = startY - (totalItems - 1) * ITEM_HEIGHT;
-
-        reelList.style.transform = `translateY(${startY}px)`;
-        const duration = 8000; // 8 segundos
-        const startTime = performance.now();
-
-        function update(now) {
-          const elapsed = now - startTime;
-          if (elapsed >= duration) {
-            reelList.style.transform = `translateY(${targetY}px)`;
-            const winnerItem = reelList.lastElementChild;
-            winnerItem.style.color = '#fff';
-            winnerItem.style.textShadow = '0 0 20px #facc15, 0 0 40px #facc15';
-            winnerItem.style.transform = 'scale(1.1)';
-            winnerItem.style.transition = 'all 0.5s';
-            setTimeout(() => {
-              reelContainer.style.display = 'none';
-              raffleStage.classList.add('show-winners');
-              showResults(winners, reserves);
-            }, 1200);
-            return;
+        // Login simulado (admin/admin)
+        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+          e.preventDefault();
+          const user = document.getElementById('adminUser').value.trim();
+          const pass = document.getElementById('adminPassword').value.trim();
+          if (user === 'admin' && pass === 'admin') {
+            loginView.style.display = 'none';
+            dashboardView.classList.remove('hidden');
+            renderTable();
+            updateHeaderCount();
+            systemStatus.textContent = '✅ Conectado a la base de datos local.';
+            renderDrawHistory();
+          } else {
+            loginNotice.textContent = 'Credenciales incorrectas. Usa admin / admin.';
           }
-          const t = elapsed / duration;
-          const eased = 1 - Math.pow(1 - t, 4);
-          const currentY = startY - eased * (startY - targetY);
-          reelList.style.transform = `translateY(${currentY}px)`;
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+          loginView.style.display = '';
+          dashboardView.classList.add('hidden');
+          document.getElementById('adminLoginForm').reset();
+          loginNotice.textContent = '';
+        });
+
+        // --- Ruleta vertical (centrado perfecto) ---
+        function animateRaffle(pool, winners, reserves, firstWinner) {
+          let sequence = [];
+          const rounds = 15;
+          for (let i = 0; i < rounds; i++) {
+            const shuffled = [...pool].sort(() => Math.random() - 0.5);
+            sequence.push(...shuffled.map(p => p.fullName));
+          }
+          sequence.push(firstWinner);
+
+          reelList.innerHTML = '';
+          sequence.forEach(name => {
+            const div = document.createElement('div');
+            div.className = 'reel-item';
+            div.textContent = name;
+            reelList.appendChild(div);
+          });
+
+          raffleStage.classList.remove('show-winners');
+          reelContainer.style.display = 'block';
+          raffleResults.innerHTML = '';
+
+          const ITEM_HEIGHT = 70;
+          const CONTAINER_HEIGHT = reelContainer.clientHeight;
+          const totalItems = sequence.length;
+          const startY = (CONTAINER_HEIGHT - ITEM_HEIGHT) / 2;
+          const targetY = startY - (totalItems - 1) * ITEM_HEIGHT;
+
+          reelList.style.transform = `translateY(${startY}px)`;
+          const duration = 8000; // 8 segundos
+          const startTime = performance.now();
+
+          function update(now) {
+            const elapsed = now - startTime;
+            if (elapsed >= duration) {
+              reelList.style.transform = `translateY(${targetY}px)`;
+              const winnerItem = reelList.lastElementChild;
+              winnerItem.style.color = '#fff';
+              winnerItem.style.textShadow = '0 0 20px #facc15, 0 0 40px #facc15';
+              winnerItem.style.transform = 'scale(1.1)';
+              winnerItem.style.transition = 'all 0.5s';
+              setTimeout(() => {
+                reelContainer.style.display = 'none';
+                raffleStage.classList.add('show-winners');
+                showResults(winners, reserves);
+              }, 1200);
+              return;
+            }
+            const t = elapsed / duration;
+            const eased = 1 - Math.pow(1 - t, 4);
+            const currentY = startY - eased * (startY - targetY);
+            reelList.style.transform = `translateY(${currentY}px)`;
+            requestAnimationFrame(update);
+          }
           requestAnimationFrame(update);
         }
-        requestAnimationFrame(update);
-      }
 
-      function showResults(winners, reserves) {
-        let html = '';
-        if (winners.length) {
-          html += '<div class="winner-group"><h4>🏆 Ganadores</h4>';
-          winners.forEach(w => html += `<div class="winner-entry">${w.fullName}</div>`);
-          html += '</div>';
+        function showResults(winners, reserves) {
+          let html = '';
+          if (winners.length) {
+            html += '<div class="winner-group"><h4>🏆 Ganadores</h4>';
+            winners.forEach(w => html += `<div class="winner-entry">${w.fullName}</div>`);
+            html += '</div>';
+          }
+          if (reserves.length) {
+            html += '<div class="winner-group"><h4>🔹 Suplentes</h4>';
+            reserves.forEach(r => html += `<div class="winner-entry">${r.fullName}</div>`);
+            html += '</div>';
+          }
+          raffleResults.innerHTML = html || '<p>Sin resultados.</p>';
+
+          // Actualizar "último sorteo"
+          latestDrawResult.innerHTML = winners.length ? `Último ganador: ${winners[0].fullName}` : 'Sin resultados.';
+
+          const draw = {
+            date: new Date().toISOString(),
+            title: document.getElementById('raffleTitle').value || 'Sorteo Aurora',
+            winners: winners.map(w => ({ fullName: w.fullName })),
+            reserves: reserves.map(r => ({ fullName: r.fullName })),
+            notes: document.getElementById('raffleNotes').value
+          };
+          drawHistory.unshift(draw);
+          localStorage.setItem('auroraDrawHistory', JSON.stringify(drawHistory));
+          renderDrawHistory();
         }
-        if (reserves.length) {
-          html += '<div class="winner-group"><h4>🔹 Suplentes</h4>';
-          reserves.forEach(r => html += `<div class="winner-entry">${r.fullName}</div>`);
-          html += '</div>';
-        }
-        raffleResults.innerHTML = html || '<p>Sin resultados.</p>';
 
-        const draw = {
-          date: new Date().toISOString(),
-          title: document.getElementById('raffleTitle').value || 'Sorteo Aurora',
-          winners: winners.map(w => ({ fullName: w.fullName })),
-          reserves: reserves.map(r => ({ fullName: r.fullName })),
-          notes: document.getElementById('raffleNotes').value
-        };
-        drawHistory.unshift(draw);
-        localStorage.setItem('auroraDrawHistory', JSON.stringify(drawHistory));
-        renderDrawHistory();
-      }
-
-      function renderDrawHistory() {
-        if (!drawHistory.length) {
-          drawHistoryDiv.innerHTML = '<p class="empty-state">Aún no se realizaron sorteos.</p>';
-          return;
-        }
-        let html = '';
-        drawHistory.slice(0, 5).forEach(d => {
-          html += `<div class="history-entry"><strong>${d.title}</strong> – ${new Date(d.date).toLocaleString()}<br>`;
-          html += `Ganadores: ${d.winners.map(w => w.fullName).join(', ')}`;
-          if (d.reserves.length) html += ` | Suplentes: ${d.reserves.map(r => r.fullName).join(', ')}`;
-          html += '</div><hr>';
-        });
-        drawHistoryDiv.innerHTML = html;
-      }
-
-      document.getElementById('raffleForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        raffleNotice.textContent = '';
-        if (!entries.length) {
-          raffleNotice.textContent = 'No hay registros disponibles.';
-          return;
-        }
-        const owner = document.getElementById('raffleOwnershipFilter').value;
-        const winC = parseInt(document.getElementById('raffleWinnerCount').value, 10) || 1;
-        const resC = parseInt(document.getElementById('raffleReserveCount').value, 10) || 0;
-        const excl = document.getElementById('raffleExcludePrevious').checked;
-
-        let filt = [...entries];
-        if (owner === 'with') filt = filt.filter(r => r.hasLot === 'yes');
-        if (owner === 'without') filt = filt.filter(r => r.hasLot === 'no');
-        if (excl) {
-          const prevNames = new Set();
-          drawHistory.forEach(d => {
-            d.winners.forEach(w => prevNames.add(w.fullName));
-            d.reserves.forEach(r => prevNames.add(r.fullName));
+        function renderDrawHistory() {
+          if (!drawHistory.length) {
+            drawHistoryDiv.innerHTML = '<p class="empty-state">Aún no se realizaron sorteos.</p>';
+            return;
+          }
+          let html = '';
+          drawHistory.slice(0, 5).forEach(d => {
+            html += `<div class="history-entry"><strong>${d.title}</strong> – ${new Date(d.date).toLocaleString()}<br>`;
+            html += `Ganadores: ${d.winners.map(w => w.fullName).join(', ')}`;
+            if (d.reserves.length) html += ` | Suplentes: ${d.reserves.map(r => r.fullName).join(', ')}`;
+            html += '</div><hr>';
           });
-          filt = filt.filter(r => !prevNames.has(r.fullName));
-        }
-        if (!filt.length) {
-          raffleNotice.textContent = 'No hay participantes con esos filtros.';
-          return;
+          drawHistoryDiv.innerHTML = html;
         }
 
-        const shuf = [...filt].sort(() => Math.random() - 0.5);
-        const total = winC + resC;
-        const chosen = shuf.slice(0, total);
-        const wins = chosen.slice(0, winC);
-        const ress = chosen.slice(winC);
-        const first = wins[0]?.fullName || filt[0].fullName;
-        animateRaffle(filt, wins, ress, first);
-      });
+        document.getElementById('raffleForm').addEventListener('submit', function(e) {
+          e.preventDefault();
+          raffleNotice.textContent = '';
+          if (!entries.length) {
+            raffleNotice.textContent = 'No hay registros en la base.';
+            return;
+          }
+          const owner = document.getElementById('raffleOwnershipFilter').value;
+          const winC = parseInt(document.getElementById('raffleWinnerCount').value, 10) || 1;
+          const resC = parseInt(document.getElementById('raffleReserveCount').value, 10) || 0;
+          const excl = document.getElementById('raffleExcludePrevious').checked;
 
-      // Inicializar
-      updateHeaderCount();
-    })();
-  </script>
-</body>
+          let filt = [...entries];
+          if (owner === 'with') filt = filt.filter(r => r.hasLot === 'yes');
+          if (owner === 'without') filt = filt.filter(r => r.hasLot === 'no');
+          if (excl) {
+            const prevNames = new Set();
+            drawHistory.forEach(d => {
+              d.winners.forEach(w => prevNames.add(w.fullName));
+              d.reserves.forEach(r => prevNames.add(r.fullName));
+            });
+            filt = filt.filter(r => !prevNames.has(r.fullName));
+          }
+          if (!filt.length) {
+            raffleNotice.textContent = 'No hay participantes con esos filtros.';
+            return;
+          }
+
+          const shuf = [...filt].sort(() => Math.random() - 0.5);
+          const total = winC + resC;
+          const chosen = shuf.slice(0, total);
+          const wins = chosen.slice(0, winC);
+          const ress = chosen.slice(winC);
+          const first = wins[0]?.fullName || filt[0].fullName;
+          animateRaffle(filt, wins, ress, first);
+        });
+
+        // Copiar resultado
+        document.getElementById('copyWinnersBtn').addEventListener('click', () => {
+          const text = document.getElementById('raffleResults').innerText;
+          if (!text) return;
+          navigator.clipboard.writeText(text).then(() => alert('Resultado copiado.'));
+        });
+
+        // Inicializar
+        updateHeaderCount();
+      })();
+    </script>
+  </body>
 </html>
