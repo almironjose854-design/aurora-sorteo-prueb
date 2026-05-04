@@ -16,7 +16,6 @@
     <script src="./assets/aurora-admin.js" defer></script>
 
     <style>
-      /* Ruleta vertical (nombres suben) */
       .raffle-stage .winner-reel-container {
         position: relative;
         width: 100%;
@@ -28,7 +27,6 @@
         margin-top: 1.5rem;
         box-shadow: inset 0 0 30px rgba(0,0,0,0.6), 0 0 20px rgba(250,204,21,0.2);
       }
-
       .winner-reel-list {
         position: absolute;
         left: 0;
@@ -38,7 +36,6 @@
         flex-direction: column;
         align-items: center;
       }
-
       .reel-item {
         padding: 12px 20px;
         font-size: 2.2rem;
@@ -50,7 +47,6 @@
         white-space: nowrap;
         opacity: 0.85;
       }
-
       .raffle-stage .winner-list {
         display: none;
       }
@@ -285,7 +281,6 @@
                 <div class="eyebrow">Resultado</div>
                 <h3>Ganadores y suplentes</h3>
                 <p class="helper-line">El sorteo se actualiza aquí automáticamente.</p>
-                <!-- CONTENEDOR DE LA RULETA VERTICAL -->
                 <div id="reelContainer" class="winner-reel-container">
                   <div id="reelList" class="winner-reel-list"></div>
                 </div>
@@ -405,12 +400,13 @@
           let html = '';
           if (winners.length) {
             html += '<div class="winner-group"><h4>🏆 Ganadores</h4>';
-            winners.forEach(w => html += `<div class="winner-entry">${w.fullName} <span class="winner-meta">CI: ${w.ci}</span></div>`);
+            // Solo mostramos el nombre
+            winners.forEach(w => html += `<div class="winner-entry">${w.fullName}</div>`);
             html += '</div>';
           }
           if (reserves.length) {
             html += '<div class="winner-group"><h4>🔹 Suplentes</h4>';
-            reserves.forEach(r => html += `<div class="winner-entry">${r.fullName} <span class="winner-meta">CI: ${r.ci}</span></div>`);
+            reserves.forEach(r => html += `<div class="winner-entry">${r.fullName}</div>`);
             html += '</div>';
           }
           div.innerHTML = html || '<p>Sin resultados.</p>';
@@ -418,8 +414,8 @@
           const draw = {
             date: new Date().toISOString(),
             title: document.getElementById('raffleTitle').value || 'Sorteo Aurora',
-            winners: winners.map(w => ({ fullName: w.fullName, ci: w.ci })),
-            reserves: reserves.map(r => ({ fullName: r.fullName, ci: r.ci })),
+            winners: winners.map(w => ({ fullName: w.fullName })),
+            reserves: reserves.map(r => ({ fullName: r.fullName })),
             notes: document.getElementById('raffleNotes').value
           };
           const hist = JSON.parse(localStorage.getItem('auroraDrawHistory') || '[]');
