@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Aurora Inmobiliaria | Panel Admin (ruleta centrada)</title>
-    <meta name="description" content="Panel interno con estadísticas, gráficos, sorteo animado e historial." />
+    <title>Aurora Inmobiliaria | Panel Admin (ruleta vertical centrada)</title>
+    <meta name="description" content="Panel interno con estadísticas, gráficos, sorteos animados e historial." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -16,29 +16,44 @@
     <script src="./assets/aurora-admin.js" defer></script>
     
     <style>
+      /* ✅ NUEVA RULETA VERTICAL (NOMBRES SUBEN) */
       .raffle-stage .winner-reel-container {
+        position: relative;
         width: 100%;
         height: 160px;
-        background: #1e293b;
-        border-radius: 16px;
-        display: none; /* se muestra al sortear */
+        background: linear-gradient(145deg, #0f172a, #1e293b);
+        border-radius: 20px;
+        overflow: hidden;
+        display: none;
+        margin-top: 1.5rem;
+        box-shadow: inset 0 0 30px rgba(0,0,0,0.6), 0 0 20px rgba(250,204,21,0.2);
+      }
+
+      .winner-reel-list {
+        position: absolute;
+        left: 0;
+        right: 0;
+        will-change: transform;
+        display: flex;
+        flex-direction: column;
         align-items: center;
-        justify-content: center;
-        margin-top: 1rem;
-        font-size: 2.5rem;
+        gap: 0;
+      }
+
+      .reel-item {
+        padding: 12px 20px;
+        font-size: 2.2rem;
         font-weight: 800;
         color: #facc15;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        line-height: 1.3;
         text-align: center;
-        padding: 0 1rem;
-        box-sizing: border-box;
-        overflow: hidden;
+        min-width: 100%;
+        white-space: nowrap;
+        opacity: 0.85;
+        transition: transform 0.1s, opacity 0.1s;
       }
-      .winner-reel-name {
-        transition: none; /* se controla con JS */
-        user-select: none;
-      }
+
       .raffle-stage .winner-list {
         display: none;
       }
@@ -71,7 +86,7 @@
       </header>
 
       <main class="admin-main">
-        <!-- ==================== LOGIN ==================== -->
+        <!-- ==================== LOGIN (sin cambios) ==================== -->
         <section id="loginView" class="surface auth-card">
           <div class="panel-top">
             <div>
@@ -107,9 +122,7 @@
               <div>
                 <div class="eyebrow">Vista ejecutiva</div>
                 <h2 class="section-title">Centro de control de la campaña</h2>
-                <p class="section-copy">
-                  Analiza el comportamiento del formulario, administra la base y ejecuta sorteos con datos reales.
-                </p>
+                <p class="section-copy">Analiza el comportamiento del formulario, administra la base y ejecuta sorteos con datos reales.</p>
               </div>
               <div class="button-row">
                 <a class="btn btn-ghost" href="./" data-app-route="">Ver formulario público</a>
@@ -158,34 +171,34 @@
 
           <div class="dashboard-grid">
             <section id="insights" class="surface section-card span-4">
-              <div class="section-heading"><div><h3>Dominios de correo más frecuentes</h3><p class="section-copy">Muestra qué tipos de correo predominan dentro de la base.</p></div></div>
+              <div class="section-heading"><div><h3>Dominios de correo más frecuentes</h3><p class="section-copy">Muestra qué tipos de correo predominan.</p></div></div>
               <div id="domainList" class="insight-list"></div>
             </section>
             <section class="surface section-card span-4">
-              <div class="section-heading"><div><h3>Prefijos de celular más frecuentes</h3><p class="section-copy">Ayuda a detectar rápidamente la concentración principal de contactos.</p></div></div>
+              <div class="section-heading"><div><h3>Prefijos de celular más frecuentes</h3><p class="section-copy">Concentración principal de contactos.</p></div></div>
               <div id="prefixList" class="insight-list"></div>
             </section>
             <section class="surface section-card span-4">
-              <div class="section-heading"><div><h3>Calidad de datos</h3><p class="section-copy">Detecta teléfonos, correos o nombres repetidos para revisión.</p></div></div>
+              <div class="section-heading"><div><h3>Calidad de datos</h3><p class="section-copy">Teléfonos, correos o nombres repetidos.</p></div></div>
               <div id="qualityList" class="insight-list"></div>
             </section>
             <section class="surface section-card span-6">
-              <div class="section-heading"><div><h3>Actividad reciente</h3><p class="section-copy">Altas, eliminaciones y sorteos persistidos por el backend.</p></div></div>
+              <div class="section-heading"><div><h3>Actividad reciente</h3><p class="section-copy">Altas, eliminaciones y sorteos.</p></div></div>
               <div id="activityList" class="insight-list"></div>
             </section>
             <section class="surface section-card span-6">
-              <div class="section-heading"><div><h3>Último sorteo</h3><p class="section-copy">Resumen inmediato del resultado más reciente.</p></div></div>
+              <div class="section-heading"><div><h3>Último sorteo</h3><p class="section-copy">Resumen del resultado más reciente.</p></div></div>
               <div id="latestDrawResult" class="empty-state">Aún no se realizaron sorteos.</div>
             </section>
           </div>
 
           <div id="charts" class="dashboard-grid">
             <section class="surface chart-card span-6">
-              <div class="section-heading"><div><h3>Ingresos por día</h3><p class="section-copy">Visualiza el ritmo de carga durante el periodo seleccionado.</p></div></div>
+              <div class="section-heading"><div><h3>Ingresos por día</h3><p class="section-copy">Ritmo de carga.</p></div></div>
               <div class="chart-box"><canvas id="chartDaily"></canvas></div>
             </section>
             <section class="surface chart-card span-6">
-              <div class="section-heading"><div><h3>Distribución con y sin lote</h3><p class="section-copy">Comparación simple de tipos de participantes.</p></div></div>
+              <div class="section-heading"><div><h3>Distribución con/sin lote</h3><p class="section-copy">Comparación de participantes.</p></div></div>
               <div class="chart-box"><canvas id="chartOwnership"></canvas></div>
             </section>
           </div>
@@ -193,40 +206,38 @@
           <!-- Tabla de registros -->
           <section id="records" class="surface table-card">
             <div class="section-heading">
-              <div><h3>Registros guardados</h3><p class="section-copy">Filtra, revisa y depura la base leída desde el backend en Node.js.</p></div>
+              <div><h3>Registros guardados</h3><p class="section-copy">Filtra, revisa y depura la base.</p></div>
             </div>
             <div class="table-toolbar">
-              <input id="entriesSearch" type="search" placeholder="Buscar por nombre, cédula, correo o teléfono" />
+              <input id="entriesSearch" type="search" placeholder="Buscar..." />
               <select id="lotFilter">
-                <option value="all">Todos los participantes</option>
-                <option value="with">Solo con lote</option>
-                <option value="without">Solo sin lote</option>
+                <option value="all">Todos</option>
+                <option value="with">Con lote</option>
+                <option value="without">Sin lote</option>
               </select>
               <select id="tableDateFilter">
                 <option value="all">Todas las fechas</option>
-                <option value="today">Solo hoy</option>
+                <option value="today">Hoy</option>
                 <option value="7d">Últimos 7 días</option>
                 <option value="30d">Últimos 30 días</option>
               </select>
               <select id="tableSort">
-                <option value="recent">Más recientes primero</option>
-                <option value="oldest">Más antiguos primero</option>
+                <option value="recent">Más recientes</option>
+                <option value="oldest">Más antiguos</option>
                 <option value="name">Nombre A-Z</option>
               </select>
             </div>
-            <div class="table-note">Mostrando <strong id="visibleCount">0</strong> registro(s) visibles del total.</div>
+            <div class="table-note">Mostrando <strong id="visibleCount">0</strong> registro(s).</div>
             <div class="table-wrap">
               <table>
-                <thead>
-                  <tr><th>Participante</th><th>Contacto</th><th>Lote</th><th>Fecha</th><th>Acciones</th></tr>
-                </thead>
+                <thead><tr><th>Participante</th><th>Contacto</th><th>Lote</th><th>Fecha</th><th>Acciones</th></tr></thead>
                 <tbody id="entriesTableBody"></tbody>
               </table>
             </div>
-            <div id="emptyEntriesState" class="empty-state hidden">No hay registros para los filtros actuales.</div>
+            <div id="emptyEntriesState" class="empty-state hidden">No hay registros.</div>
           </section>
 
-          <!-- ==================== SORTEO (RULETA CENTRADA) ==================== -->
+          <!-- ==================== SORTEO (RULETA VERTICAL PERFECTA) ==================== -->
           <section id="raffle" class="surface raffle-card">
             <div class="section-heading">
               <div>
@@ -238,7 +249,7 @@
             <div class="raffle-layout">
               <form id="raffleForm" class="raffle-form" novalidate>
                 <div class="field">
-                  <label for="raffleTitle">Título del sorteo</label>
+                  <label for="raffleTitle">Título</label>
                   <input id="raffleTitle" type="text" maxlength="120" placeholder="Sorteo principal Aurora" />
                 </div>
                 <div class="columns-2">
@@ -262,12 +273,12 @@
                   </div>
                   <div class="field">
                     <label for="raffleNotes">Notas</label>
-                    <input id="raffleNotes" type="text" maxlength="180" placeholder="Observaciones opcionales" />
+                    <input id="raffleNotes" type="text" maxlength="180" placeholder="Observaciones" />
                   </div>
                 </div>
                 <div class="checkbox-card">
                   <input id="raffleExcludePrevious" type="checkbox" />
-                  <label for="raffleExcludePrevious">Excluir ganadores y suplentes anteriores.</label>
+                  <label for="raffleExcludePrevious">Excluir ganadores anteriores.</label>
                 </div>
                 <div id="rafflePoolInfo" class="surface info-card"></div>
                 <div id="raffleNotice" class="notice" role="status" aria-live="polite"></div>
@@ -280,34 +291,29 @@
               <aside class="raffle-stage" id="raffleStage">
                 <div class="eyebrow">Resultado</div>
                 <h3>Ganadores y suplentes</h3>
-                <p class="helper-line">El último sorteo guardado se actualiza automáticamente aquí.</p>
-                <!-- Nuevo contenedor de ruleta centrada -->
+                <p class="helper-line">El sorteo se actualiza aquí automáticamente.</p>
+                <!-- CONTENEDOR DE LA RULETA VERTICAL -->
                 <div id="reelContainer" class="winner-reel-container">
-                  <span id="reelName" class="winner-reel-name"></span>
+                  <div id="reelList" class="winner-reel-list"></div>
                 </div>
                 <div id="raffleResults" class="winner-list"></div>
               </aside>
             </div>
           </section>
 
-          <!-- Historial de sorteos -->
+          <!-- Historial -->
           <section id="history" class="surface history-card">
-            <div class="section-heading">
-              <div>
-                <h3>Historial de sorteos</h3>
-                <p class="section-copy">Cada resultado queda persistido en `draws.json` para consulta posterior.</p>
-              </div>
-            </div>
+            <div class="section-heading"><div><h3>Historial de sorteos</h3><p class="section-copy">Datos persistidos en draws.json.</p></div></div>
             <div id="drawHistory" class="history-list"></div>
           </section>
         </section>
       </main>
     </div>
 
-    <!-- ==================== SCRIPT DE RULETA PRECISA ==================== -->
+    <!-- ==================== SCRIPT RULETA VERTICAL MEJORADA ==================== -->
     <script>
       (function() {
-        // --- Obtención de registros ---
+        // --- Obtención de registros (robusta) ---
         async function fetchFromServer() {
           try {
             const res = await fetch('/api/entries');
@@ -338,63 +344,117 @@
           return fromTable();
         }
 
-        // --- NUEVA RULETA CENTRADA (tipo slot-machine) ---
+        // --- RULETA VERTICAL ANIMADA ---
         function animateRaffle(pool, winners, reserves, firstWinner) {
           const container = document.getElementById('reelContainer');
-          const nameSpan = document.getElementById('reelName');
+          const reelList = document.getElementById('reelList');
           const stage = document.getElementById('raffleStage');
           const resultsDiv = document.getElementById('raffleResults');
 
-          // Preparar secuencia larga de nombres (mezclados)
+          // Construir lista larga de nombres (15 rondas barajadas) + el ganador al final
           let sequence = [];
-          const rounds = 15; // vueltas completas sobre el pool
+          const rounds = 15;
           for (let i = 0; i < rounds; i++) {
-            // En cada vuelta, barajar para variedad
             const shuffled = [...pool].sort(() => Math.random() - 0.5);
             sequence.push(...shuffled.map(p => p.fullName));
           }
-          // Asegurar que el ganador esté al final (justo donde se detendrá)
-          sequence.push(firstWinner);
+          sequence.push(firstWinner); // el último será el ganador
 
+          // Limpiar y llenar el contenedor vertical
+          reelList.innerHTML = '';
+          sequence.forEach(name => {
+            const div = document.createElement('div');
+            div.className = 'reel-item';
+            div.textContent = name;
+            reelList.appendChild(div);
+          });
+
+          // Mostrar el contenedor y ocultar resultados anteriores
           stage.classList.remove('show-winners');
-          container.style.display = 'flex';
+          container.style.display = 'block';
           resultsDiv.innerHTML = '';
 
-          let index = 0;
-          const total = sequence.length;
-          let delay = 30; // milisegundos iniciales (muy rápido)
-          const maxDelay = 400; // cuando llegue a esto, se detendrá
-          const acceleration = 1.8; // factor de aumento del delay (frenado)
+          // Altura de cada elemento
+          const itemHeight = reelList.firstElementChild.offsetHeight;
+          const totalItems = sequence.length;
+          const containerHeight = container.clientHeight;
 
-          function showNext() {
-            if (index >= total) {
-              // Terminó la secuencia, mostrar resultados
+          // Posición Y inicial (el primer elemento en el centro)
+          let currentY = (containerHeight - itemHeight) / 2;
+          // Índice del elemento que está en el centro visual
+          let currentIndex = 0;
+          reelList.style.transform = `translateY(${currentY}px)`;
+
+          // Parámetros de animación
+          let speed = 120; // píxeles por segundo iniciales (muy rápido)
+          const accel = 0.96; // factor de frenado: multiplica la velocidad cada frame
+          const minSpeed = 0.5;
+          let animationId;
+          let lastTime = performance.now();
+          let stopped = false;
+
+          function step(now) {
+            if (stopped) return;
+            const dt = (now - lastTime) / 1000; // segundos
+            lastTime = now;
+
+            // Mover hacia arriba (nombres suben)
+            currentY -= speed * dt;
+            // Si el centro del primer elemento se sale, avanzamos el índice
+            const itemCenterY = currentY + (currentIndex + 0.5) * itemHeight;
+            while (itemCenterY < containerHeight / 2 - itemHeight && currentIndex < totalItems - 1) {
+              currentIndex++;
+            }
+            // Limitar para no ir más allá del último elemento
+            if (currentIndex >= totalItems - 1) {
+              // Asegurar que el último elemento quede centrado
+              const targetY = (containerHeight - itemHeight) / 2 - (totalItems - 1) * itemHeight;
+              reelList.style.transform = `translateY(${targetY}px)`;
+              stopped = true;
+              // Resaltar ganador
+              highlightWinner();
+              return;
+            }
+
+            reelList.style.transform = `translateY(${currentY}px)`;
+
+            // Frenar progresivamente
+            speed *= accel;
+            if (speed < minSpeed) speed = minSpeed;
+
+            // Si la velocidad es muy baja y estamos cerca del final, forzamos parada
+            if (speed < 0.8 && currentIndex >= totalItems - 3) {
+              const targetY = (containerHeight - itemHeight) / 2 - (totalItems - 1) * itemHeight;
+              reelList.style.transition = 'transform 0.6s cubic-bezier(0.2, 0.9, 0.3, 1)';
+              reelList.style.transform = `translateY(${targetY}px)`;
+              stopped = true;
+              // Después de la transición CSS, mostramos resultados
+              setTimeout(highlightWinner, 700);
+              return;
+            }
+
+            animationId = requestAnimationFrame(step);
+          }
+
+          function highlightWinner() {
+            // Efecto visual en el ganador (ya está centrado)
+            const winnerItem = reelList.lastElementChild;
+            winnerItem.style.color = '#fff';
+            winnerItem.style.textShadow = '0 0 20px #facc15, 0 0 40px #facc15';
+            winnerItem.style.transform = 'scale(1.1)';
+            winnerItem.style.transition = 'all 0.5s';
+
+            // Después de un breve instante, mostrar resultados
+            setTimeout(() => {
               container.style.display = 'none';
               stage.classList.add('show-winners');
               showResults(winners, reserves);
-              return;
-            }
-            nameSpan.textContent = sequence[index];
-            index++;
-
-            // Aumentar el delay progresivamente para frenar
-            delay = Math.min(delay * acceleration, maxDelay);
-            // Cuando el delay es cercano a maxDelay, ya casi se detiene
-            if (index === total - 1) {
-              // Último nombre (ganador): lo dejamos fijo y esperamos un poco antes de mostrar resultados
-              nameSpan.textContent = firstWinner;
-              setTimeout(() => {
-                container.style.display = 'none';
-                stage.classList.add('show-winners');
-                showResults(winners, reserves);
-              }, 800);
-              return;
-            }
-            setTimeout(showNext, delay);
+            }, 1200);
           }
 
-          // Iniciar el ciclo
-          showNext();
+          // Iniciar animación
+          lastTime = performance.now();
+          animationId = requestAnimationFrame(step);
         }
 
         function showResults(winners, reserves) {
@@ -412,7 +472,6 @@
           }
           div.innerHTML = html || '<p>Sin resultados.</p>';
 
-          // Guardar sorteo
           const draw = {
             date: new Date().toISOString(),
             title: document.getElementById('raffleTitle').value || 'Sorteo Aurora',
@@ -442,24 +501,27 @@
             if (owner==='with') filt = filt.filter(r=>r.hasLot==='yes');
             if (owner==='without') filt = filt.filter(r=>r.hasLot==='no');
             if (excl) {
-              const hist = JSON.parse(localStorage.getItem('auroraDrawHistory')||'[]');
+              const hist = JSON.parse(localStorage.getItem('auroraDrawHistory') || '[]');
               const prev = new Set();
-              hist.forEach(d=>{ (d.winners||[]).forEach(w=>prev.add(w.fullName)); (d.reserves||[]).forEach(r=>prev.add(r.fullName)); });
-              filt = filt.filter(r=>!prev.has(r.fullName));
+              hist.forEach(d => {
+                (d.winners||[]).forEach(w => prev.add(w.fullName));
+                (d.reserves||[]).forEach(r => prev.add(r.fullName));
+              });
+              filt = filt.filter(r => !prev.has(r.fullName));
             }
             if (!filt.length) { alert('No hay participantes con esos filtros.'); return; }
 
-            const shuf = [...filt].sort(()=>Math.random()-0.5);
-            const total = winC+resC;
-            const chosen = shuf.slice(0,total);
-            const wins = chosen.slice(0,winC);
+            const shuf = [...filt].sort(() => Math.random() - 0.5);
+            const total = winC + resC;
+            const chosen = shuf.slice(0, total);
+            const wins = chosen.slice(0, winC);
             const ress = chosen.slice(winC);
             const first = wins[0]?.fullName || filt[0].fullName;
             animateRaffle(filt, wins, ress, first);
           });
         }
 
-        if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',initRaffle);
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initRaffle);
         else initRaffle();
       })();
     </script>
