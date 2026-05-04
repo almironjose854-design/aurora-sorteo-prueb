@@ -3,17 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Aurora Inmobiliaria | Panel Admin</title>
+    <title>Aurora Inmobiliaria | Panel Admin (sorteo animado estable)</title>
     <meta name="description" content="Panel interno con estadísticas, gráficos, sorteo animado e historial." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./assets/aurora-shared.css" />
+    <script src="./assets/aurora-data.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js" defer></script>
+    <script src="./assets/aurora-admin.js" defer></script>
+
     <style>
-      /* Ruleta vertical (compatible con el diseño original) */
       .raffle-stage .winner-reel-container {
         position: relative;
         width: 100%;
@@ -58,7 +60,7 @@
   </head>
   <body class="page-admin">
     <div class="container">
-      <!-- Header original -->
+      <!-- ==================== HEADER ==================== -->
       <header class="topbar">
         <div class="brand-block">
           <div class="brand-wordmark">
@@ -77,7 +79,7 @@
       </header>
 
       <main class="admin-main">
-        <!-- Login -->
+        <!-- ==================== LOGIN ==================== -->
         <section id="loginView" class="surface auth-card">
           <div class="panel-top">
             <div>
@@ -105,17 +107,14 @@
           </form>
         </section>
 
-        <!-- Dashboard (oculto hasta login exitoso) -->
+        <!-- ==================== DASHBOARD ==================== -->
         <section id="dashboardView" class="dashboard-stack hidden">
-          <!-- Overview -->
           <section id="overview" class="surface dashboard-hero">
             <div class="section-heading">
               <div>
                 <div class="eyebrow">Vista ejecutiva</div>
                 <h2 class="section-title">Centro de control de la campaña</h2>
-                <p class="section-copy">
-                  Analiza el comportamiento del formulario, administra la base y ejecuta sorteos con datos reales.
-                </p>
+                <p class="section-copy">Analiza el comportamiento del formulario, administra la base y ejecuta sorteos con datos reales.</p>
               </div>
               <div class="button-row">
                 <a class="btn btn-ghost" href="./" data-app-route="">Ver formulario público</a>
@@ -141,7 +140,6 @@
             <a href="#history">Historial</a>
           </nav>
 
-          <!-- Sección de análisis (placeholder) -->
           <section class="surface section-card">
             <div class="section-heading">
               <div>
@@ -152,7 +150,7 @@
                 <label for="analyticsPeriod">Periodo</label>
                 <select id="analyticsPeriod">
                   <option value="all">Toda la base</option>
-                  <option value="today">Solo hoy</option>
+                  <option value="today">Hoy</option>
                   <option value="7d">Últimos 7 días</option>
                   <option value="30d">Últimos 30 días</option>
                 </select>
@@ -164,75 +162,71 @@
 
           <div class="dashboard-grid">
             <section id="insights" class="surface section-card span-4">
-              <div class="section-heading"><div><h3>Dominios de correo más frecuentes</h3><p class="section-copy">Muestra qué tipos de correo predominan dentro de la base.</p></div></div>
+              <div class="section-heading"><div><h3>Dominios de correo más frecuentes</h3><p class="section-copy">Tipos de correo predominantes.</p></div></div>
               <div id="domainList" class="insight-list"></div>
             </section>
             <section class="surface section-card span-4">
-              <div class="section-heading"><div><h3>Prefijos de celular más frecuentes</h3><p class="section-copy">Ayuda a detectar rápidamente la concentración principal de contactos.</p></div></div>
+              <div class="section-heading"><div><h3>Prefijos de celular más frecuentes</h3><p class="section-copy">Concentración de contactos.</p></div></div>
               <div id="prefixList" class="insight-list"></div>
             </section>
             <section class="surface section-card span-4">
-              <div class="section-heading"><div><h3>Calidad de datos</h3><p class="section-copy">Detecta teléfonos, correos o nombres repetidos para revisión.</p></div></div>
+              <div class="section-heading"><div><h3>Calidad de datos</h3><p class="section-copy">Registros repetidos o incompletos.</p></div></div>
               <div id="qualityList" class="insight-list"></div>
             </section>
             <section class="surface section-card span-6">
-              <div class="section-heading"><div><h3>Actividad reciente</h3><p class="section-copy">Altas, eliminaciones y sorteos persistidos por el backend.</p></div></div>
+              <div class="section-heading"><div><h3>Actividad reciente</h3><p class="section-copy">Altas, bajas y sorteos.</p></div></div>
               <div id="activityList" class="insight-list"></div>
             </section>
             <section class="surface section-card span-6">
-              <div class="section-heading"><div><h3>Último sorteo</h3><p class="section-copy">Resumen inmediato del resultado más reciente.</p></div></div>
+              <div class="section-heading"><div><h3>Último sorteo</h3><p class="section-copy">Resumen del resultado más reciente.</p></div></div>
               <div id="latestDrawResult" class="empty-state">Aún no se realizaron sorteos.</div>
             </section>
           </div>
 
           <div id="charts" class="dashboard-grid">
             <section class="surface chart-card span-6">
-              <div class="section-heading"><div><h3>Ingresos por día</h3><p class="section-copy">Visualiza el ritmo de carga durante el periodo seleccionado.</p></div></div>
+              <div class="section-heading"><div><h3>Ingresos por día</h3><p class="section-copy">Ritmo de carga.</p></div></div>
               <div class="chart-box"><canvas id="chartDaily"></canvas></div>
             </section>
             <section class="surface chart-card span-6">
-              <div class="section-heading"><div><h3>Distribución con y sin lote</h3><p class="section-copy">Comparación simple de tipos de participantes.</p></div></div>
+              <div class="section-heading"><div><h3>Distribución con/sin lote</h3><p class="section-copy">Comparación de participantes.</p></div></div>
               <div class="chart-box"><canvas id="chartOwnership"></canvas></div>
             </section>
           </div>
 
-          <!-- Tabla de registros (original) -->
+          <!-- Tabla de registros -->
           <section id="records" class="surface table-card">
-            <div class="section-heading">
-              <div><h3>Registros guardados</h3><p class="section-copy">Filtra, revisa y depura la base leída desde el backend en Node.js.</p></div>
-            </div>
+            <div class="section-heading"><div><h3>Registros guardados</h3><p class="section-copy">Filtra, revisa y depura.</p></div></div>
             <div class="table-toolbar">
-              <input id="entriesSearch" type="search" placeholder="Buscar por nombre, cédula, correo o teléfono" />
+              <input id="entriesSearch" type="search" placeholder="Buscar..." />
               <select id="lotFilter">
-                <option value="all">Todos los participantes</option>
-                <option value="with">Solo con lote</option>
-                <option value="without">Solo sin lote</option>
+                <option value="all">Todos</option>
+                <option value="with">Con lote</option>
+                <option value="without">Sin lote</option>
               </select>
               <select id="tableDateFilter">
                 <option value="all">Todas las fechas</option>
-                <option value="today">Solo hoy</option>
+                <option value="today">Hoy</option>
                 <option value="7d">Últimos 7 días</option>
                 <option value="30d">Últimos 30 días</option>
               </select>
               <select id="tableSort">
-                <option value="recent">Más recientes primero</option>
-                <option value="oldest">Más antiguos primero</option>
+                <option value="recent">Más recientes</option>
+                <option value="oldest">Más antiguos</option>
                 <option value="name">Nombre A-Z</option>
               </select>
             </div>
-            <div class="table-note">Mostrando <strong id="visibleCount">0</strong> registro(s) visibles del total.</div>
+            <div class="table-note">Mostrando <strong id="visibleCount">0</strong> registro(s).</div>
             <div class="table-wrap">
               <table>
-                <thead>
-                  <tr><th>Participante</th><th>Contacto</th><th>Lote</th><th>Fecha</th><th>Acciones</th></tr>
-                </thead>
+                <thead><tr><th>Participante</th><th>Contacto</th><th>Lote</th><th>Fecha</th><th>Acciones</th></tr></thead>
                 <tbody id="entriesTableBody"></tbody>
               </table>
             </div>
-            <div id="emptyEntriesState" class="empty-state hidden">No hay registros para los filtros actuales.</div>
+            <div id="emptyEntriesState" class="empty-state hidden">No hay registros.</div>
           </section>
 
-          <!-- Sorteo con ruleta vertical mejorada -->
+          <!-- ==================== SORTEO (RULETA VERTICAL) ==================== -->
           <section id="raffle" class="surface raffle-card">
             <div class="section-heading">
               <div>
@@ -244,7 +238,7 @@
             <div class="raffle-layout">
               <form id="raffleForm" class="raffle-form" novalidate>
                 <div class="field">
-                  <label for="raffleTitle">Título del sorteo</label>
+                  <label for="raffleTitle">Título</label>
                   <input id="raffleTitle" type="text" maxlength="120" placeholder="Sorteo principal Aurora" />
                 </div>
                 <div class="columns-2">
@@ -268,12 +262,12 @@
                   </div>
                   <div class="field">
                     <label for="raffleNotes">Notas</label>
-                    <input id="raffleNotes" type="text" maxlength="180" placeholder="Observaciones opcionales" />
+                    <input id="raffleNotes" type="text" maxlength="180" placeholder="Observaciones" />
                   </div>
                 </div>
                 <div class="checkbox-card">
                   <input id="raffleExcludePrevious" type="checkbox" />
-                  <label for="raffleExcludePrevious">Excluir ganadores y suplentes anteriores.</label>
+                  <label for="raffleExcludePrevious">Excluir ganadores anteriores.</label>
                 </div>
                 <div id="rafflePoolInfo" class="surface info-card"></div>
                 <div id="raffleNotice" class="notice" role="status" aria-live="polite"></div>
@@ -286,8 +280,7 @@
               <aside class="raffle-stage" id="raffleStage">
                 <div class="eyebrow">Resultado</div>
                 <h3>Ganadores y suplentes</h3>
-                <p class="helper-line">El último sorteo guardado se actualiza automáticamente aquí.</p>
-                <!-- Contenedor de la ruleta vertical -->
+                <p class="helper-line">El sorteo se actualiza aquí automáticamente.</p>
                 <div id="reelContainer" class="winner-reel-container">
                   <div id="reelList" class="winner-reel-list"></div>
                 </div>
@@ -298,118 +291,54 @@
 
           <!-- Historial -->
           <section id="history" class="surface history-card">
-            <div class="section-heading">
-              <div>
-                <h3>Historial de sorteos</h3>
-                <p class="section-copy">Cada resultado queda persistido en `draws.json` para consulta posterior.</p>
-              </div>
-            </div>
+            <div class="section-heading"><div><h3>Historial de sorteos</h3><p class="section-copy">Datos persistidos en draws.json.</p></div></div>
             <div id="drawHistory" class="history-list"></div>
           </section>
         </section>
       </main>
     </div>
 
-    <!-- Script autónomo: lógica del panel + ruleta vertical -->
+    <!-- ==================== SCRIPT DE RULETA ==================== -->
     <script>
       (function() {
-        // Datos de ejemplo (se guardan en localStorage)
-        const SAMPLE = [
-          { fullName: 'AMANCIO DUTRA', ci: '6456645', phone: '0971123456', hasLot: 'yes', date: '2026-05-01' },
-          { fullName: 'MARIA GONZALEZ', ci: '1234567', phone: '0981123456', hasLot: 'no', date: '2026-05-02' },
-          { fullName: 'JUAN PEREZ', ci: '8765432', phone: '0991123456', hasLot: 'yes', date: '2026-05-03' },
-          { fullName: 'SOFIA LOPEZ', ci: '3456789', phone: '0972123456', hasLot: 'no', date: '2026-05-04' },
-          { fullName: 'CARLOS MARTINEZ', ci: '2345678', phone: '0982123456', hasLot: 'yes', date: '2026-05-05' }
-        ];
-
-        let entries = JSON.parse(localStorage.getItem('auroraEntries')) || SAMPLE;
-        let drawHistory = JSON.parse(localStorage.getItem('auroraDrawHistory')) || [];
-
-        // Referencias DOM
-        const headerCount = document.getElementById('headerCount');
-        const tbody = document.getElementById('entriesTableBody');
-        const visibleCount = document.getElementById('visibleCount');
-        const loginView = document.getElementById('loginView');
-        const dashboardView = document.getElementById('dashboardView');
-        const loginNotice = document.getElementById('loginNotice');
-        const systemStatus = document.getElementById('systemStatus');
-        const raffleNotice = document.getElementById('raffleNotice');
-        const reelContainer = document.getElementById('reelContainer');
-        const reelList = document.getElementById('reelList');
-        const raffleStage = document.getElementById('raffleStage');
-        const raffleResults = document.getElementById('raffleResults');
-        const drawHistoryDiv = document.getElementById('drawHistory');
-        const latestDrawResult = document.getElementById('latestDrawResult');
-
-        function updateHeaderCount() {
-          headerCount.textContent = entries.length;
+        // --- Obtención de registros ---
+        async function fetchFromServer() {
+          try {
+            const res = await fetch('/api/entries');
+            if (!res.ok) throw new Error('Error');
+            const data = await res.json();
+            return Array.isArray(data) ? data : (data.entries || []);
+          } catch { return null; }
+        }
+        function fromTable() {
+          const tbody = document.getElementById('entriesTableBody');
+          if (!tbody || !tbody.children.length) return [];
+          return Array.from(tbody.querySelectorAll('tr')).map(row => {
+            const cells = row.querySelectorAll('td');
+            if (!cells.length) return null;
+            const name = cells[0]?.textContent?.trim() || '';
+            const contact = cells[1]?.textContent?.trim() || '';
+            const ci = (contact.match(/(\d{6,8})/) || [])[1] || '';
+            const phone = (contact.match(/📞\s*(\d+)/) || [])[1] || '';
+            const lot = cells[2]?.textContent?.trim().toLowerCase().includes('sí') ? 'yes' : 'no';
+            return { fullName: name, ci, phone, hasLot: lot };
+          }).filter(Boolean);
+        }
+        async function getRecords() {
+          for (let arr of [window.auroraRecords, window.__auroraRecords, window.allRecords, window.entries, window.dataEntries, window.state?.entries])
+            if (Array.isArray(arr) && arr.length) return arr;
+          let t = fromTable(); if (t.length) return t;
+          const s = await fetchFromServer(); if (s && s.length) return s;
+          return fromTable();
         }
 
-        function renderTable(filtered = entries) {
-          tbody.innerHTML = '';
-          visibleCount.textContent = filtered.length;
-          filtered.forEach(e => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${e.fullName}</td>
-              <td>CI: ${e.ci} | 📞 ${e.phone}</td>
-              <td>${e.hasLot === 'yes' ? 'Sí' : 'No'}</td>
-              <td>${e.date || '—'}</td>
-              <td><button data-delete="${e.ci}" class="btn btn-ghost" style="padding:0.2rem 0.5rem;">🗑️</button></td>
-            `;
-            tbody.appendChild(tr);
-          });
-          document.querySelectorAll('[data-delete]').forEach(btn => {
-            btn.addEventListener('click', function() {
-              const ci = this.getAttribute('data-delete');
-              entries = entries.filter(e => e.ci !== ci);
-              localStorage.setItem('auroraEntries', JSON.stringify(entries));
-              filterTable();
-              updateHeaderCount();
-            });
-          });
-        }
-
-        function filterTable() {
-          const search = document.getElementById('entriesSearch').value.toLowerCase();
-          const lot = document.getElementById('lotFilter').value;
-          // Filtros de fecha y orden no implementados para simplificar, pero puedes añadirlos
-          let filtered = entries;
-          if (search) filtered = filtered.filter(e => e.fullName.toLowerCase().includes(search) || e.ci.includes(search));
-          if (lot === 'with') filtered = filtered.filter(e => e.hasLot === 'yes');
-          if (lot === 'without') filtered = filtered.filter(e => e.hasLot === 'no');
-          renderTable(filtered);
-        }
-
-        document.getElementById('entriesSearch').addEventListener('input', filterTable);
-        document.getElementById('lotFilter').addEventListener('change', filterTable);
-
-        // Login simulado (admin/admin)
-        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
-          e.preventDefault();
-          const user = document.getElementById('adminUser').value.trim();
-          const pass = document.getElementById('adminPassword').value.trim();
-          if (user === 'admin' && pass === 'admin') {
-            loginView.style.display = 'none';
-            dashboardView.classList.remove('hidden');
-            renderTable();
-            updateHeaderCount();
-            systemStatus.textContent = '✅ Conectado a la base de datos local.';
-            renderDrawHistory();
-          } else {
-            loginNotice.textContent = 'Credenciales incorrectas. Usa admin / admin.';
-          }
-        });
-
-        document.getElementById('logoutBtn').addEventListener('click', function() {
-          loginView.style.display = '';
-          dashboardView.classList.add('hidden');
-          document.getElementById('adminLoginForm').reset();
-          loginNotice.textContent = '';
-        });
-
-        // --- Ruleta vertical (centrado perfecto) ---
+        // --- RULETA VERTICAL (INTERPOLACIÓN) ---
         function animateRaffle(pool, winners, reserves, firstWinner) {
+          const container = document.getElementById('reelContainer');
+          const reelList = document.getElementById('reelList');
+          const stage = document.getElementById('raffleStage');
+          const resultsDiv = document.getElementById('raffleResults');
+
           let sequence = [];
           const rounds = 15;
           for (let i = 0; i < rounds; i++) {
@@ -426,18 +355,19 @@
             reelList.appendChild(div);
           });
 
-          raffleStage.classList.remove('show-winners');
-          reelContainer.style.display = 'block';
-          raffleResults.innerHTML = '';
+          stage.classList.remove('show-winners');
+          container.style.display = 'block';
+          resultsDiv.innerHTML = '';
 
           const ITEM_HEIGHT = 70;
-          const CONTAINER_HEIGHT = reelContainer.clientHeight;
+          const CONTAINER_HEIGHT = container.clientHeight;
           const totalItems = sequence.length;
           const startY = (CONTAINER_HEIGHT - ITEM_HEIGHT) / 2;
           const targetY = startY - (totalItems - 1) * ITEM_HEIGHT;
 
           reelList.style.transform = `translateY(${startY}px)`;
-          const duration = 8000; // 8 segundos
+
+          const duration = 8000;
           const startTime = performance.now();
 
           function update(now) {
@@ -450,8 +380,8 @@
               winnerItem.style.transform = 'scale(1.1)';
               winnerItem.style.transition = 'all 0.5s';
               setTimeout(() => {
-                reelContainer.style.display = 'none';
-                raffleStage.classList.add('show-winners');
+                container.style.display = 'none';
+                stage.classList.add('show-winners');
                 showResults(winners, reserves);
               }, 1200);
               return;
@@ -466,9 +396,11 @@
         }
 
         function showResults(winners, reserves) {
+          const div = document.getElementById('raffleResults');
           let html = '';
           if (winners.length) {
             html += '<div class="winner-group"><h4>🏆 Ganadores</h4>';
+            // Solo mostramos el nombre
             winners.forEach(w => html += `<div class="winner-entry">${w.fullName}</div>`);
             html += '</div>';
           }
@@ -477,10 +409,7 @@
             reserves.forEach(r => html += `<div class="winner-entry">${r.fullName}</div>`);
             html += '</div>';
           }
-          raffleResults.innerHTML = html || '<p>Sin resultados.</p>';
-
-          // Actualizar "último sorteo"
-          latestDrawResult.innerHTML = winners.length ? `Último ganador: ${winners[0].fullName}` : 'Sin resultados.';
+          div.innerHTML = html || '<p>Sin resultados.</p>';
 
           const draw = {
             date: new Date().toISOString(),
@@ -489,72 +418,50 @@
             reserves: reserves.map(r => ({ fullName: r.fullName })),
             notes: document.getElementById('raffleNotes').value
           };
-          drawHistory.unshift(draw);
-          localStorage.setItem('auroraDrawHistory', JSON.stringify(drawHistory));
-          renderDrawHistory();
+          const hist = JSON.parse(localStorage.getItem('auroraDrawHistory') || '[]');
+          hist.unshift(draw);
+          localStorage.setItem('auroraDrawHistory', JSON.stringify(hist));
+          if (typeof window.refreshDrawHistory === 'function') window.refreshDrawHistory();
         }
 
-        function renderDrawHistory() {
-          if (!drawHistory.length) {
-            drawHistoryDiv.innerHTML = '<p class="empty-state">Aún no se realizaron sorteos.</p>';
-            return;
-          }
-          let html = '';
-          drawHistory.slice(0, 5).forEach(d => {
-            html += `<div class="history-entry"><strong>${d.title}</strong> – ${new Date(d.date).toLocaleString()}<br>`;
-            html += `Ganadores: ${d.winners.map(w => w.fullName).join(', ')}`;
-            if (d.reserves.length) html += ` | Suplentes: ${d.reserves.map(r => r.fullName).join(', ')}`;
-            html += '</div><hr>';
+        function initRaffle() {
+          const form = document.getElementById('raffleForm');
+          if (!form) return;
+          form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const pool = await getRecords();
+            if (!pool.length) { alert('No hay registros disponibles.'); return; }
+            const owner = document.getElementById('raffleOwnershipFilter').value;
+            const winC = parseInt(document.getElementById('raffleWinnerCount').value, 10) || 1;
+            const resC = parseInt(document.getElementById('raffleReserveCount').value, 10) || 0;
+            const excl = document.getElementById('raffleExcludePrevious').checked;
+
+            let filt = pool;
+            if (owner === 'with') filt = filt.filter(r => r.hasLot === 'yes');
+            if (owner === 'without') filt = filt.filter(r => r.hasLot === 'no');
+            if (excl) {
+              const hist = JSON.parse(localStorage.getItem('auroraDrawHistory') || '[]');
+              const prev = new Set();
+              hist.forEach(d => {
+                (d.winners || []).forEach(w => prev.add(w.fullName));
+                (d.reserves || []).forEach(r => prev.add(r.fullName));
+              });
+              filt = filt.filter(r => !prev.has(r.fullName));
+            }
+            if (!filt.length) { alert('No hay participantes con esos filtros.'); return; }
+
+            const shuf = [...filt].sort(() => Math.random() - 0.5);
+            const total = winC + resC;
+            const chosen = shuf.slice(0, total);
+            const wins = chosen.slice(0, winC);
+            const ress = chosen.slice(winC);
+            const first = wins[0]?.fullName || filt[0].fullName;
+            animateRaffle(filt, wins, ress, first);
           });
-          drawHistoryDiv.innerHTML = html;
         }
 
-        document.getElementById('raffleForm').addEventListener('submit', function(e) {
-          e.preventDefault();
-          raffleNotice.textContent = '';
-          if (!entries.length) {
-            raffleNotice.textContent = 'No hay registros en la base.';
-            return;
-          }
-          const owner = document.getElementById('raffleOwnershipFilter').value;
-          const winC = parseInt(document.getElementById('raffleWinnerCount').value, 10) || 1;
-          const resC = parseInt(document.getElementById('raffleReserveCount').value, 10) || 0;
-          const excl = document.getElementById('raffleExcludePrevious').checked;
-
-          let filt = [...entries];
-          if (owner === 'with') filt = filt.filter(r => r.hasLot === 'yes');
-          if (owner === 'without') filt = filt.filter(r => r.hasLot === 'no');
-          if (excl) {
-            const prevNames = new Set();
-            drawHistory.forEach(d => {
-              d.winners.forEach(w => prevNames.add(w.fullName));
-              d.reserves.forEach(r => prevNames.add(r.fullName));
-            });
-            filt = filt.filter(r => !prevNames.has(r.fullName));
-          }
-          if (!filt.length) {
-            raffleNotice.textContent = 'No hay participantes con esos filtros.';
-            return;
-          }
-
-          const shuf = [...filt].sort(() => Math.random() - 0.5);
-          const total = winC + resC;
-          const chosen = shuf.slice(0, total);
-          const wins = chosen.slice(0, winC);
-          const ress = chosen.slice(winC);
-          const first = wins[0]?.fullName || filt[0].fullName;
-          animateRaffle(filt, wins, ress, first);
-        });
-
-        // Copiar resultado
-        document.getElementById('copyWinnersBtn').addEventListener('click', () => {
-          const text = document.getElementById('raffleResults').innerText;
-          if (!text) return;
-          navigator.clipboard.writeText(text).then(() => alert('Resultado copiado.'));
-        });
-
-        // Inicializar
-        updateHeaderCount();
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initRaffle);
+        else initRaffle();
       })();
     </script>
   </body>
