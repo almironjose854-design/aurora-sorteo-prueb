@@ -1,256 +1,292 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Aurora Inmobiliaria | Panel Admin</title>
-    <meta name="description" content="Panel interno con estadísticas, gráficos, sorteo animado e historial." />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./assets/aurora-shared.css" />
-    <style>
-      .raffle-stage .winner-reel-container {
-        position: relative;
-        width: 100%;
-        height: 160px;
-        background: linear-gradient(145deg, #0f172a, #1e293b);
-        border-radius: 20px;
-        overflow: hidden;
-        display: none;
-        margin-top: 1.5rem;
-        box-shadow: inset 0 0 30px rgba(0,0,0,0.6), 0 0 20px rgba(250,204,21,0.2);
-      }
-      .winner-reel-list {
-        position: absolute;
-        left: 0;
-        right: 0;
-        will-change: transform;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-      .reel-item {
-        padding: 12px 20px;
-        font-size: 2.2rem;
-        font-weight: 800;
-        color: #facc15;
-        text-transform: uppercase;
-        line-height: 1.3;
-        text-align: center;
-        white-space: nowrap;
-        opacity: 0.85;
-      }
-      .raffle-stage .winner-list { display: none; }
-      .raffle-stage.show-winners .winner-list { display: block; }
-      .raffle-stage.show-winners .winner-reel-container { display: none; }
-    </style>
-  </head>
-  <body class="page-admin">
-    <div class="container">
-      <!-- Header -->
-      <header class="topbar">
-        <div class="brand-block">
-          <div class="brand-wordmark">
-            <img data-brand-logo src="" alt="Aurora Inmobiliaria" />
-          </div>
-          <div class="brand-copy">
-            <span class="eyebrow-text">Acceso interno</span>
-            <strong>Panel administrativo de registros y sorteos</strong>
-            <span>Estadísticas, control de base y sorteos.</span>
-          </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aurora Inmobiliaria | Panel Admin</title>
+  <meta name="description" content="Panel interno con sorteo animado." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* Estilos base compartidos (simplificados) */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: 'Rubik', sans-serif; background: #f1f5f9; color: #1e293b; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 1rem; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 1rem 2rem; border-radius: 12px; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .brand-block { display: flex; align-items: center; gap: 1rem; }
+    .brand-wordmark img { height: 40px; }
+    .meta-row { display: flex; gap: 1rem; }
+    .meta-chip { background: #e2e8f0; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem; }
+    .meta-chip-live { background: #dcfce7; color: #166534; }
+    .auth-card { max-width: 400px; margin: 2rem auto; background: #fff; border-radius: 16px; padding: 2rem; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+    .panel-top { text-align: center; margin-bottom: 1.5rem; }
+    .eyebrow { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; }
+    .section-title { font-size: 1.8rem; font-weight: 800; margin: 0.5rem 0; }
+    .auth-copy { color: #475569; }
+    .auth-form { display: flex; flex-direction: column; gap: 1rem; }
+    .columns-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .field { display: flex; flex-direction: column; gap: 0.3rem; }
+    .field label { font-weight: 600; }
+    .field input, .field select { padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 8px; }
+    .btn { padding: 0.7rem 1.2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .btn-primary { background: #d32f2f; color: #fff; }
+    .btn-primary:hover { background: #b71c1c; }
+    .btn-secondary { background: #1e293b; color: #fff; }
+    .btn-ghost { background: transparent; border: 1px solid #cbd5e1; }
+    .btn-ghost:hover { background: #f1f5f9; }
+    .btn-danger { background: #ef4444; color: #fff; }
+    .dashboard-stack { display: flex; flex-direction: column; gap: 1.5rem; }
+    .dashboard-hero { background: #fff; border-radius: 16px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .section-heading { margin-bottom: 1rem; }
+    .dashboard-nav { display: flex; gap: 0.5rem; background: #fff; padding: 0.5rem; border-radius: 12px; }
+    .dashboard-nav a { padding: 0.5rem 1rem; text-decoration: none; color: #475569; font-weight: 500; border-radius: 8px; }
+    .dashboard-nav a:hover { background: #f1f5f9; }
+    .section-card, .table-card, .raffle-card, .history-card { background: #fff; border-radius: 16px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .table-toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    .raffle-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    @media (max-width: 768px) { .raffle-layout { grid-template-columns: 1fr; } }
+    .raffle-form { display: flex; flex-direction: column; gap: 1rem; }
+    .checkbox-card { display: flex; align-items: center; gap: 0.5rem; }
+    .winner-reel-container {
+      position: relative;
+      width: 100%;
+      height: 160px;
+      background: linear-gradient(145deg, #0f172a, #1e293b);
+      border-radius: 20px;
+      overflow: hidden;
+      display: none;
+      margin-top: 1.5rem;
+      box-shadow: inset 0 0 30px rgba(0,0,0,0.6), 0 0 20px rgba(250,204,21,0.2);
+    }
+    .winner-reel-list {
+      position: absolute;
+      left: 0;
+      right: 0;
+      will-change: transform;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .reel-item {
+      padding: 12px 20px;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #facc15;
+      text-transform: uppercase;
+      line-height: 1.3;
+      text-align: center;
+      white-space: nowrap;
+      opacity: 0.85;
+    }
+    .winner-list { display: none; }
+    .show-winners .winner-list { display: block; }
+    .show-winners .winner-reel-container { display: none; }
+    .winner-entry { padding: 0.5rem 0; font-weight: 600; }
+    .notice { color: #ef4444; font-size: 0.9rem; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body class="page-admin">
+  <div class="container">
+    <!-- Header -->
+    <header class="topbar">
+      <div class="brand-block">
+        <div class="brand-wordmark"><img src="assets/aurora55logo.webp" alt="Aurora" /></div>
+        <div class="brand-copy">
+          <span class="eyebrow-text">Acceso interno</span>
+          <strong>Panel administrativo</strong>
+          <span>Estadísticas y sorteos</span>
         </div>
-        <div class="meta-row">
-          <div class="meta-chip meta-chip-live">JSON activo</div>
-          <div class="meta-chip"><strong id="headerCount">0</strong> registros</div>
-        </div>
-      </header>
+      </div>
+      <div class="meta-row">
+        <div class="meta-chip meta-chip-live">JSON activo</div>
+        <div class="meta-chip"><strong id="headerCount">0</strong> registros</div>
+      </div>
+    </header>
 
-      <main class="admin-main">
-        <!-- Login (simulado) -->
-        <section id="loginView" class="surface auth-card">
-          <div class="panel-top">
-            <div>
-              <div class="eyebrow">Login administrativo</div>
-              <h1 class="section-title">Ingresa al panel interno</h1>
-              <p class="auth-copy">Usa las credenciales configuradas.</p>
-            </div>
-            <div class="logo-badge">
-              <img data-brand-logo src="" alt="Aurora Inmobiliaria" />
-            </div>
+    <main class="admin-main">
+      <!-- Login -->
+      <section id="loginView" class="surface auth-card">
+        <div class="panel-top">
+          <h1 class="section-title">Ingresa al panel</h1>
+          <p class="auth-copy">Credenciales: admin / admin</p>
+        </div>
+        <form id="adminLoginForm" class="auth-form">
+          <div class="field">
+            <label for="adminUser">Usuario</label>
+            <input id="adminUser" name="adminUser" type="text" required />
           </div>
-          <form id="adminLoginForm" class="auth-form" novalidate>
-            <div class="columns-2">
-              <div class="field">
-                <label for="adminUser">Usuario</label>
-                <input id="adminUser" name="adminUser" type="text" autocomplete="username" required />
-              </div>
-              <div class="field">
-                <label for="adminPassword">Contraseña</label>
-                <input id="adminPassword" name="adminPassword" type="password" autocomplete="current-password" required />
-              </div>
-            </div>
-            <div id="loginNotice" class="notice"></div>
-            <button class="btn btn-secondary" type="submit">Ingresar al panel</button>
-          </form>
+          <div class="field">
+            <label for="adminPassword">Contraseña</label>
+            <input id="adminPassword" name="adminPassword" type="password" required />
+          </div>
+          <div id="loginNotice" class="notice"></div>
+          <button class="btn btn-secondary" type="submit">Ingresar</button>
+        </form>
+      </section>
+
+      <!-- Dashboard (oculto hasta login) -->
+      <section id="dashboardView" class="dashboard-stack hidden">
+        <section id="overview" class="dashboard-hero">
+          <div class="section-heading">
+            <div class="eyebrow">Vista ejecutiva</div>
+            <h2 class="section-title">Centro de control</h2>
+            <p class="section-copy">Administra registros y realiza sorteos.</p>
+          </div>
+          <div class="button-row">
+            <button id="refreshBtn" class="btn btn-ghost">Actualizar</button>
+            <button id="logoutBtn" class="btn btn-danger">Cerrar sesión</button>
+          </div>
+          <div id="systemStatus" class="system-strip"></div>
         </section>
 
-        <!-- Dashboard (oculto hasta login) -->
-        <section id="dashboardView" class="dashboard-stack hidden">
-          <section id="overview" class="surface dashboard-hero">
-            <div class="section-heading">
-              <div>
-                <div class="eyebrow">Vista ejecutiva</div>
-                <h2 class="section-title">Centro de control</h2>
-                <p class="section-copy">Analiza el formulario, administra la base y realiza sorteos.</p>
-              </div>
-              <div class="button-row">
-                <a class="btn btn-ghost" href="./">Ver formulario público</a>
-                <button id="refreshBtn" class="btn btn-ghost" type="button">Actualizar</button>
-                <button id="exportCsvBtn" class="btn btn-primary" type="button">CSV</button>
-                <button id="logoutBtn" class="btn btn-danger" type="button">Cerrar sesión</button>
-              </div>
-            </div>
-            <div class="system-strip" id="systemStatus"></div>
-          </section>
+        <nav class="dashboard-nav">
+          <a href="#records">Registros</a>
+          <a href="#raffle">Sorteo</a>
+          <a href="#history">Historial</a>
+        </nav>
 
-          <nav class="dashboard-nav">
-            <a href="#overview">Resumen</a>
-            <a href="#records">Registros</a>
-            <a href="#raffle">Sorteo</a>
-            <a href="#history">Historial</a>
-          </nav>
+        <!-- Tabla de registros -->
+        <section id="records" class="table-card">
+          <div class="section-heading"><h3>Registros</h3></div>
+          <div class="table-toolbar">
+            <input id="entriesSearch" type="search" placeholder="Buscar..." />
+            <select id="lotFilter">
+              <option value="all">Todos</option>
+              <option value="with">Con lote</option>
+              <option value="without">Sin lote</option>
+            </select>
+          </div>
+          <div class="table-note">Mostrando <strong id="visibleCount">0</strong> registro(s).</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Participante</th><th>Contacto</th><th>Lote</th><th>Acciones</th></tr></thead>
+              <tbody id="entriesTableBody"></tbody>
+            </table>
+          </div>
+        </section>
 
-          <!-- Tabla de registros -->
-          <section id="records" class="surface table-card">
-            <div class="section-heading"><div><h3>Registros guardados</h3><p class="section-copy">Filtra y revisa la base.</p></div></div>
-            <div class="table-toolbar">
-              <input id="entriesSearch" type="search" placeholder="Buscar..." />
-              <select id="lotFilter">
-                <option value="all">Todos</option>
-                <option value="with">Con lote</option>
-                <option value="without">Sin lote</option>
-              </select>
-            </div>
-            <div class="table-note">Mostrando <strong id="visibleCount">0</strong> registro(s).</div>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>Participante</th><th>Contacto</th><th>Lote</th><th>Fecha</th><th>Acciones</th></tr></thead>
-                <tbody id="entriesTableBody"></tbody>
-              </table>
-            </div>
-          </section>
-
-          <!-- Sorteo (ruleta vertical) -->
-          <section id="raffle" class="surface raffle-card">
-            <div class="section-heading">
-              <div>
-                <div class="eyebrow">Módulo de sorteo</div>
-                <h3>Generar nuevo sorteo</h3>
-                <p class="section-copy">Usa filtros, suplentes y exclusión de ganadores anteriores.</p>
+        <!-- Sorteo con ruleta vertical -->
+        <section id="raffle" class="raffle-card">
+          <div class="section-heading">
+            <div class="eyebrow">Módulo de sorteo</div>
+            <h3>Generar nuevo sorteo</h3>
+          </div>
+          <div class="raffle-layout">
+            <form id="raffleForm" class="raffle-form">
+              <div class="field">
+                <label for="raffleTitle">Título</label>
+                <input id="raffleTitle" type="text" placeholder="Sorteo Aurora" />
               </div>
-            </div>
-            <div class="raffle-layout">
-              <form id="raffleForm" class="raffle-form" novalidate>
+              <div class="columns-2">
                 <div class="field">
-                  <label for="raffleTitle">Título</label>
-                  <input id="raffleTitle" type="text" maxlength="120" placeholder="Sorteo principal Aurora" />
+                  <label for="raffleOwnershipFilter">Participantes</label>
+                  <select id="raffleOwnershipFilter">
+                    <option value="all">Todos</option>
+                    <option value="with">Con lote</option>
+                    <option value="without">Sin lote</option>
+                  </select>
                 </div>
-                <div class="columns-2">
-                  <div class="field">
-                    <label for="raffleOwnershipFilter">Participantes</label>
-                    <select id="raffleOwnershipFilter">
-                      <option value="all">Todos</option>
-                      <option value="with">Solo con lote</option>
-                      <option value="without">Solo sin lote</option>
-                    </select>
-                  </div>
-                  <div class="field">
-                    <label for="raffleWinnerCount">Ganadores</label>
-                    <input id="raffleWinnerCount" type="number" min="1" max="100" value="1" />
-                  </div>
+                <div class="field">
+                  <label for="raffleWinnerCount">Ganadores</label>
+                  <input id="raffleWinnerCount" type="number" min="1" max="100" value="1" />
                 </div>
-                <div class="columns-2">
-                  <div class="field">
-                    <label for="raffleReserveCount">Suplentes</label>
-                    <input id="raffleReserveCount" type="number" min="0" max="100" value="0" />
-                  </div>
-                  <div class="field">
-                    <label for="raffleNotes">Notas</label>
-                    <input id="raffleNotes" type="text" maxlength="180" placeholder="Observaciones" />
-                  </div>
+              </div>
+              <div class="columns-2">
+                <div class="field">
+                  <label for="raffleReserveCount">Suplentes</label>
+                  <input id="raffleReserveCount" type="number" min="0" max="100" value="0" />
                 </div>
-                <div class="checkbox-card">
-                  <input id="raffleExcludePrevious" type="checkbox" />
-                  <label for="raffleExcludePrevious">Excluir ganadores anteriores.</label>
+                <div class="field">
+                  <label for="raffleNotes">Notas</label>
+                  <input id="raffleNotes" type="text" placeholder="Observaciones" />
                 </div>
-                <div id="rafflePoolInfo" class="surface info-card"></div>
-                <div id="raffleNotice" class="notice"></div>
-                <div class="button-row">
-                  <button id="raffleSubmitBtn" class="btn btn-primary" type="submit">Realizar sorteo</button>
-                  <button id="copyWinnersBtn" class="btn btn-ghost" type="button">Copiar resultado</button>
-                </div>
-              </form>
+              </div>
+              <div class="checkbox-card">
+                <input id="raffleExcludePrevious" type="checkbox" />
+                <label for="raffleExcludePrevious">Excluir ganadores anteriores</label>
+              </div>
+              <div id="raffleNotice" class="notice"></div>
+              <div class="button-row">
+                <button id="raffleSubmitBtn" class="btn btn-primary" type="submit">Realizar sorteo</button>
+              </div>
+            </form>
 
-              <aside class="raffle-stage" id="raffleStage">
-                <div class="eyebrow">Resultado</div>
-                <h3>Ganadores y suplentes</h3>
-                <p class="helper-line">El sorteo se actualiza aquí automáticamente.</p>
-                <div id="reelContainer" class="winner-reel-container">
-                  <div id="reelList" class="winner-reel-list"></div>
-                </div>
-                <div id="raffleResults" class="winner-list"></div>
-              </aside>
-            </div>
-          </section>
-
-          <!-- Historial -->
-          <section id="history" class="surface history-card">
-            <div class="section-heading"><div><h3>Historial de sorteos</h3><p class="section-copy">Últimos resultados.</p></div></div>
-            <div id="drawHistory" class="history-list"></div>
-          </section>
+            <aside class="raffle-stage" id="raffleStage">
+              <div class="eyebrow">Resultado</div>
+              <h3>Ganadores y suplentes</h3>
+              <div id="reelContainer" class="winner-reel-container">
+                <div id="reelList" class="winner-reel-list"></div>
+              </div>
+              <div id="raffleResults" class="winner-list"></div>
+            </aside>
+          </div>
         </section>
-      </main>
-    </div>
 
-    <script>
-      // ---------- DATOS DE EJEMPLO ----------
-      const SAMPLE_ENTRIES = [
-        { fullName: 'AMANCIO DUTRA', ci: '6456645', phone: '0971123456', hasLot: 'yes', date: '2026-05-01' },
-        { fullName: 'MARIA GONZALEZ', ci: '1234567', phone: '0981123456', hasLot: 'no', date: '2026-05-02' },
-        { fullName: 'JUAN PEREZ', ci: '8765432', phone: '0991123456', hasLot: 'yes', date: '2026-05-03' },
-        { fullName: 'SOFIA LOPEZ', ci: '3456789', phone: '0972123456', hasLot: 'no', date: '2026-05-04' },
-        { fullName: 'CARLOS MARTINEZ', ci: '2345678', phone: '0982123456', hasLot: 'yes', date: '2026-05-05' }
+        <!-- Historial -->
+        <section id="history" class="history-card">
+          <div class="section-heading"><h3>Historial de sorteos</h3></div>
+          <div id="drawHistory"></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    (function() {
+      // Datos de ejemplo persistentes
+      const SAMPLE = [
+        { fullName: 'AMANCIO DUTRA', ci: '6456645', phone: '0971123456', hasLot: 'yes' },
+        { fullName: 'MARIA GONZALEZ', ci: '1234567', phone: '0981123456', hasLot: 'no' },
+        { fullName: 'JUAN PEREZ', ci: '8765432', phone: '0991123456', hasLot: 'yes' },
+        { fullName: 'SOFIA LOPEZ', ci: '3456789', phone: '0972123456', hasLot: 'no' },
+        { fullName: 'CARLOS MARTINEZ', ci: '2345678', phone: '0982123456', hasLot: 'yes' }
       ];
 
-      let entries = JSON.parse(localStorage.getItem('auroraEntries')) || [...SAMPLE_ENTRIES];
+      let entries = JSON.parse(localStorage.getItem('auroraEntries')) || [...SAMPLE];
       let drawHistory = JSON.parse(localStorage.getItem('auroraDrawHistory')) || [];
 
-      // ---------- FUNCIONES AUXILIARES ----------
+      const headerCount = document.getElementById('headerCount');
+      const tbody = document.getElementById('entriesTableBody');
+      const visibleCount = document.getElementById('visibleCount');
+      const loginView = document.getElementById('loginView');
+      const dashboardView = document.getElementById('dashboardView');
+      const loginNotice = document.getElementById('loginNotice');
+      const systemStatus = document.getElementById('systemStatus');
+      const raffleNotice = document.getElementById('raffleNotice');
+      const reelContainer = document.getElementById('reelContainer');
+      const reelList = document.getElementById('reelList');
+      const raffleStage = document.getElementById('raffleStage');
+      const raffleResults = document.getElementById('raffleResults');
+      const drawHistoryDiv = document.getElementById('drawHistory');
+
       function updateHeaderCount() {
-        document.getElementById('headerCount').textContent = entries.length;
+        headerCount.textContent = entries.length;
       }
+
       function renderTable(filtered = entries) {
-        const tbody = document.getElementById('entriesTableBody');
         tbody.innerHTML = '';
-        document.getElementById('visibleCount').textContent = filtered.length;
+        visibleCount.textContent = filtered.length;
         filtered.forEach(e => {
           const tr = document.createElement('tr');
           tr.innerHTML = `
             <td>${e.fullName}</td>
             <td>CI: ${e.ci} | 📞 ${e.phone}</td>
             <td>${e.hasLot === 'yes' ? 'Sí' : 'No'}</td>
-            <td>${e.date || '—'}</td>
-            <td><button data-delete="${e.ci}" class="btn btn-ghost">🗑️</button></td>
+            <td><button data-delete="${e.ci}" class="btn btn-ghost" style="padding:0.2rem 0.5rem;">🗑️</button></td>
           `;
           tbody.appendChild(tr);
         });
         document.querySelectorAll('[data-delete]').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const ci = btn.getAttribute('data-delete');
+          btn.addEventListener('click', function() {
+            const ci = this.getAttribute('data-delete');
             entries = entries.filter(e => e.ci !== ci);
             localStorage.setItem('auroraEntries', JSON.stringify(entries));
-            renderTable();
+            filterTable();
             updateHeaderCount();
           });
         });
@@ -269,36 +305,32 @@
       document.getElementById('entriesSearch').addEventListener('input', filterTable);
       document.getElementById('lotFilter').addEventListener('change', filterTable);
 
-      // ---------- LOGIN SIMULADO ----------
-      document.getElementById('adminLoginForm').addEventListener('submit', e => {
+      // Login
+      document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        const user = document.getElementById('adminUser').value;
-        const pass = document.getElementById('adminPassword').value;
+        const user = document.getElementById('adminUser').value.trim();
+        const pass = document.getElementById('adminPassword').value.trim();
         if (user === 'admin' && pass === 'admin') {
-          document.getElementById('loginView').style.display = 'none';
-          document.getElementById('dashboardView').classList.remove('hidden');
+          loginView.style.display = 'none';
+          dashboardView.classList.remove('hidden');
           renderTable();
           updateHeaderCount();
-          document.getElementById('systemStatus').textContent = '✅ Datos cargados desde almacenamiento local.';
+          systemStatus.textContent = '✅ Datos cargados desde almacenamiento local.';
+          renderDrawHistory();
         } else {
-          document.getElementById('loginNotice').textContent = 'Credenciales incorrectas. Usa admin / admin.';
+          loginNotice.textContent = 'Credenciales incorrectas. Usa admin / admin.';
         }
       });
 
-      document.getElementById('logoutBtn').addEventListener('click', () => {
-        document.getElementById('loginView').style.display = '';
-        document.getElementById('dashboardView').classList.add('hidden');
+      document.getElementById('logoutBtn').addEventListener('click', function() {
+        loginView.style.display = '';
+        dashboardView.classList.add('hidden');
         document.getElementById('adminLoginForm').reset();
-        document.getElementById('loginNotice').textContent = '';
+        loginNotice.textContent = '';
       });
 
-      // ---------- RULETA VERTICAL ----------
+      // Ruleta vertical
       function animateRaffle(pool, winners, reserves, firstWinner) {
-        const container = document.getElementById('reelContainer');
-        const reelList = document.getElementById('reelList');
-        const stage = document.getElementById('raffleStage');
-        const resultsDiv = document.getElementById('raffleResults');
-
         let sequence = [];
         const rounds = 15;
         for (let i = 0; i < rounds; i++) {
@@ -315,18 +347,18 @@
           reelList.appendChild(div);
         });
 
-        stage.classList.remove('show-winners');
-        container.style.display = 'block';
-        resultsDiv.innerHTML = '';
+        raffleStage.classList.remove('show-winners');
+        reelContainer.style.display = 'block';
+        raffleResults.innerHTML = '';
 
         const ITEM_HEIGHT = 70;
-        const CONTAINER_HEIGHT = container.clientHeight;
+        const CONTAINER_HEIGHT = reelContainer.clientHeight;
         const totalItems = sequence.length;
         const startY = (CONTAINER_HEIGHT - ITEM_HEIGHT) / 2;
         const targetY = startY - (totalItems - 1) * ITEM_HEIGHT;
 
         reelList.style.transform = `translateY(${startY}px)`;
-        const duration = 8000;
+        const duration = 8000; // 8 segundos
         const startTime = performance.now();
 
         function update(now) {
@@ -339,8 +371,8 @@
             winnerItem.style.transform = 'scale(1.1)';
             winnerItem.style.transition = 'all 0.5s';
             setTimeout(() => {
-              container.style.display = 'none';
-              stage.classList.add('show-winners');
+              reelContainer.style.display = 'none';
+              raffleStage.classList.add('show-winners');
               showResults(winners, reserves);
             }, 1200);
             return;
@@ -355,7 +387,6 @@
       }
 
       function showResults(winners, reserves) {
-        const div = document.getElementById('raffleResults');
         let html = '';
         if (winners.length) {
           html += '<div class="winner-group"><h4>🏆 Ganadores</h4>';
@@ -367,9 +398,8 @@
           reserves.forEach(r => html += `<div class="winner-entry">${r.fullName}</div>`);
           html += '</div>';
         }
-        div.innerHTML = html || '<p>Sin resultados.</p>';
+        raffleResults.innerHTML = html || '<p>Sin resultados.</p>';
 
-        // Guardar historial
         const draw = {
           date: new Date().toISOString(),
           title: document.getElementById('raffleTitle').value || 'Sorteo Aurora',
@@ -383,9 +413,8 @@
       }
 
       function renderDrawHistory() {
-        const histDiv = document.getElementById('drawHistory');
         if (!drawHistory.length) {
-          histDiv.innerHTML = '<p class="empty-state">Aún no se realizaron sorteos.</p>';
+          drawHistoryDiv.innerHTML = '<p class="empty-state">Aún no se realizaron sorteos.</p>';
           return;
         }
         let html = '';
@@ -395,19 +424,22 @@
           if (d.reserves.length) html += ` | Suplentes: ${d.reserves.map(r => r.fullName).join(', ')}`;
           html += '</div><hr>';
         });
-        histDiv.innerHTML = html;
+        drawHistoryDiv.innerHTML = html;
       }
 
-      document.getElementById('raffleForm').addEventListener('submit', async function(e) {
+      document.getElementById('raffleForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        const pool = entries; // Usamos los datos actuales
-        if (!pool.length) { alert('No hay registros disponibles.'); return; }
+        raffleNotice.textContent = '';
+        if (!entries.length) {
+          raffleNotice.textContent = 'No hay registros disponibles.';
+          return;
+        }
         const owner = document.getElementById('raffleOwnershipFilter').value;
         const winC = parseInt(document.getElementById('raffleWinnerCount').value, 10) || 1;
         const resC = parseInt(document.getElementById('raffleReserveCount').value, 10) || 0;
         const excl = document.getElementById('raffleExcludePrevious').checked;
 
-        let filt = pool;
+        let filt = [...entries];
         if (owner === 'with') filt = filt.filter(r => r.hasLot === 'yes');
         if (owner === 'without') filt = filt.filter(r => r.hasLot === 'no');
         if (excl) {
@@ -418,7 +450,10 @@
           });
           filt = filt.filter(r => !prevNames.has(r.fullName));
         }
-        if (!filt.length) { alert('No hay participantes con esos filtros.'); return; }
+        if (!filt.length) {
+          raffleNotice.textContent = 'No hay participantes con esos filtros.';
+          return;
+        }
 
         const shuf = [...filt].sort(() => Math.random() - 0.5);
         const total = winC + resC;
@@ -429,17 +464,9 @@
         animateRaffle(filt, wins, ress, first);
       });
 
-      // Botón de copiar resultado
-      document.getElementById('copyWinnersBtn').addEventListener('click', () => {
-        const results = document.getElementById('raffleResults').innerText;
-        if (!results) return;
-        navigator.clipboard.writeText(results).then(() => {
-          alert('Resultado copiado al portapapeles.');
-        });
-      });
-
-      // Inicializar historial al cargar
-      renderDrawHistory();
-    </script>
-  </body>
+      // Inicializar
+      updateHeaderCount();
+    })();
+  </script>
+</body>
 </html>
